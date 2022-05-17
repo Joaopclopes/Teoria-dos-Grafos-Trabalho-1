@@ -1,19 +1,34 @@
 #ifndef GRAFO_H_
 #define GRAFO_H_
 
+#include <vector>
+
+#include "No.h"
+#include "Aresta.h"
+
 using namespace std;
 
 class Grafo
 {
     private:
-    int Ordem;
+    int  Ordem;
+    bool direcionado;
+    bool peso_aresta;
+    bool peso_no;
+
+    No *primeiroNo;
+    No *ultimoNo;
+
+    /*funcoes sem retorno*/
 
     public:
 
     Grafo();
 
     /*funcoes sem retorno*/
-
+    
     /*funcoes com retorno*/
+    int          KCoeficienteLocal(int Idno);
+    vector<int>  CaminhoMinDjkstra(No *a,No *b);
 };
 #endif
