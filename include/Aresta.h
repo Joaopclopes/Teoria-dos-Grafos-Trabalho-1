@@ -1,5 +1,5 @@
-#ifndef ARESTA_H_
-#define ARESTA_H_
+#ifndef ARESTA_H
+#define ARESTA_H
 
 using namespace std;
 
@@ -7,11 +7,11 @@ class Aresta
 {
     private:
     int id;
-    Aresta *proxAresta;
+    No *NoDestino;
 
     public:
 
-    Aresta();
+    Aresta(No *Destino);
 
     /*funcoes sem retorno*/
 

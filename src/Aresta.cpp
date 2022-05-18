@@ -2,9 +2,11 @@
 #include <fstream>
 
 #include "Aresta.h"
+#include "No.h"
 
 using namespace std;
 
-Aresta::Aresta()
+Aresta::Aresta(No *Destino)
 {
+    NoDestino = Destino;
 }

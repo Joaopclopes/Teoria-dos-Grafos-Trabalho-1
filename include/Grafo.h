@@ -1,5 +1,5 @@
-#ifndef GRAFO_H_
-#define GRAFO_H_
+#ifndef GRAFO_H
+#define GRAFO_H
 
 #include <vector>
 
