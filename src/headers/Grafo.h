@@ -12,57 +12,65 @@
 #include <vector>
 #include <forward_list>
 
+using namespace std;
+
 class Grafo {
 
     private:
         int ordem;
-        int nArestas;
         Vertice* primeiro;
+        Vertice *ultimo;
+        bool direcionado;
+        bool peso_aresta;
+        bool peso_vertice;
+        int totalArestas;
 
-    std::string _trim(std::string linha);
+    /*std::string _trim(std::string linha);
     void _addAresta(Vertice* x, Vertice y, float peso, bool& inseriu);
     void _apagarAresta(Vertice* v, int id_y, bool& apagou);
-    //std::forward_list<Vertice> auxGuloso(float alfa);
+    //std::forward_list<Vertice> auxGuloso(float alfa);*/
 
     public:
-        bool debug = false;
-        Grafo();
+        Grafo(int ordem,bool direcionado,bool peso_aresta, bool peso_vertice);
         ~Grafo();
 
-        std::istream& lerArquivo(std::istream &arquivo);
-        std::ostream& escreverArquivo(std::ostream &arquivo);
+        void leitura(ifstream &arquivo);
+        void escreverArquivo(ofstream &arquivo);
 
+        //Getters
+        int getOrdem();
+        bool getDirecionado();
+        bool getPeso_aresta();
+        bool getPeso_vertice();
+        int getTotalArestas();
         Vertice* getV(int id);
         Vertice* getPrimeiro();
-
-        void addAresta(Vertice x, Vertice y, float peso);
-        void apagaAresta(int id_x, int id_y);
-
-        Vertice* addVertice(Vertice vertice);
-        void apagaVertice(int idVertice);
-
-        int getTotalArestas();
-        int getTotalVertices();
         int getGrauVertice();
         float getGrauMedio();
         float getFrequenciaRelativa(int grau);
-        void imprimeGrafo();
 
+        void addAresta (int id_origem, int  id_destino, float peso);
+        void apagaAresta(int id_origem, int id_destino);
+
+        void addVertice(int id);
+        void apagaVertice(int idVertice);
+        void imprimeGrafo();
+        Grafo* verticeInduzido();
+        void limparVisitados();
+
+        void transitivoDireto(int id);
+        void profundidade(Vertice *vertice);
+        void transitivoIndireto(int id);
+        void auxTransIndireto(Vertice *vertice, int id);
         void caminhamentoLargura(int id_inicio);
         void caminhamentoProfundidade(int id_inicio);
         void caminhoMinimoDijkstra(int id_inicio);
         void caminhoMinimoFloyd();
         void arvoreGeradoraPrim();
         void arvoreGeradoraKruskal();
+        void aux_busca_profundidade(Vertice *vertice);
+        void busca_profundidade();
 
 };
-
-inline std::istream& operator >>(std::istream &arquivo, Grafo &grafo) {
-    return grafo.lerArquivo(arquivo);
-}
-
-inline std::ostream& operator <<(std::ostream &arquivo, Grafo &grafo) {
-    return grafo.escreverArquivo(arquivo);
-}
 
 #endif // GRAFO_H

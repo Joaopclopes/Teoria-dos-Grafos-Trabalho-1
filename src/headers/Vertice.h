@@ -14,7 +14,9 @@ class Vertice {
     int grau;
     float peso;
     Vertice* proxV;
-    Aresta* proxA;
+    Aresta* primeira;
+    Aresta* ultima;
+    bool visitado;
 
     public:
     Vertice();
@@ -28,11 +30,18 @@ class Vertice {
     void addGrau();
     void subGrau();
     float getPeso();
+    bool getVisitado();
+    void setVisitado(bool visitado);
+    Aresta* getPrimeira();
     void setPeso(float peso);
     Vertice* getProximoVertice();
     void setProximoVertice(Vertice* proxV);
     Aresta* getProximaAresta();
     void setProximaAresta(Aresta* proxA);
+    void removerArestas();
+    bool procurarAresta(int id);
+    void inserirAresta(int id,float peso);
+    Aresta* getAresta(int idAdjacente);
 
 
 };

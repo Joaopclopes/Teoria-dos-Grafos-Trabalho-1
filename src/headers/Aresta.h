@@ -10,6 +10,7 @@ class Aresta {
     int idAdjacente;
     float peso;
     Aresta* prox;
+    bool visitado;
 
     public:
     Aresta();
@@ -22,6 +23,8 @@ class Aresta {
     void setPeso(float peso);
     Aresta* getProx();
     void setProxima(Aresta* prox);
+    void setVisitado(bool visitado);
+    bool getVisitado();
 };
 
 #endif // ARESTA_H
