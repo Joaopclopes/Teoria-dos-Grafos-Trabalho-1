@@ -31,6 +31,7 @@ class Grafo {
     //std::forward_list<Vertice> auxGuloso(float alfa);*/
 
     public:
+        bool debug = false;
         Grafo(int ordem,bool direcionado,bool peso_aresta, bool peso_vertice);
         ~Grafo();
 

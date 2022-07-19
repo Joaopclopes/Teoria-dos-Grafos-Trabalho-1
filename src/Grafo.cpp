@@ -1,9 +1,22 @@
 #include <iostream>
 #include <fstream>
+#include <regex>
+#include <vector>
+#include <unordered_map>
+#include <queue>
+#include <limits>
+#include <stack>
+#include <forward_list>
+#include <algorithm>
+#include <list>
+#include <math.h>
+#include <chrono>
 
 #include "Grafo.h"
 
 using namespace std;
+
+#define INFINITO std::numeric_limits<float>::max()
 
 //Construtor
 Grafo::Grafo(int ordem,bool direcionado,bool peso_aresta, bool peso_vertice)
@@ -358,4 +371,219 @@ vector<int> Grafo::CaminhoMinDjkstra(No *a,No *b)
     {
         
     }
-}*/ 
+}*/
+
+/**
+ * Caminho mínimo de floyd: imprime uma matriz de
+ * pesos, onde cada item da matriz m[i][j] representa o
+ * peso do nó i ao nó j.
+ * */
+void Grafo::caminhoMinimoFloyd()
+{
+    // Estrutura Caminho para armazenar os pesos das arestas e o primeiro vetor do caminho
+    struct Caminho
+    {
+        Vertice *primeiro;
+        float peso;
+    };
+
+    int tam = this->getOrdem();
+
+    //Alocação dinamica da matriz
+    Caminho **d;
+    d = new Caminho *[tam];
+
+    for (int i = 0; i < tam; i++)
+    {
+        d[i] = new Caminho[tam];
+    }
+
+    //inicializando a matriz com peso 0 para a diagonal e infinito para o resto
+    //Cria em cada elemento da matriz uma lista que servirá para guardar o caminho
+    for (int i = 0; i < tam; i++)
+    {
+        for (int j = 0; j < tam; j++)
+        {
+            if (i == j)
+            {
+                d[i][j].peso = 0;
+            }
+            else
+            {
+                d[i][j].peso = INFINITO;
+            }
+
+            d[i][j].primeiro = new Vertice(i);
+        }
+    }
+
+    //Setando os valores iniciais dado grafo a partir dos vertices vizinhos
+    Vertice *v = this->primeiro;
+    while (v != NULL)
+    {
+        Aresta *a = v->getProximaAresta();
+        while (a != NULL)
+        {
+            d[v->getId()][a->getIdAdjacente()].peso = a->getPeso();
+            d[v->getId()][a->getIdAdjacente()].primeiro->setId(v->getId());
+            a = a->getProx();
+        }
+        v = v->getProximoVertice();
+    }
+
+    //Metodo de Floyd para encontrar o menor caminho partindo de cada ponto diferente
+    for (int k = 0; k < tam; k++)
+    {
+        for (int i = 0; i < tam; i++)
+        {
+            for (int j = 0; j < tam; j++)
+            {
+                float pesoExistente = d[i][j].peso;            //Pega o menor caminho entre dois vertices(i,j)
+                float pesoTeste = d[i][k].peso + d[k][j].peso; //Soma o caminho de ir de i à j passando por k
+                if (pesoTeste < pesoExistente)                 //Se passando por k for menor entra no if e atualiza o peso na matriz
+                {
+                    d[i][j].peso = pesoTeste;
+                    Vertice *c = new Vertice(k);
+                    Vertice *aux = d[i][j].primeiro;
+                    while (aux->getProximoVertice() != NULL) //atualiza a matriz de caminhos
+                    {
+                        aux = aux->getProximoVertice();
+                    }
+                    aux->setProximoVertice(c);
+                }
+            }
+        }
+    }
+
+    //Coloca o vertice de chegada como o ultimo vertice da lista de caminhos
+    for (int i = 0; i < tam; i++)
+    {
+        for (int j = 0; j < tam; j++)
+        {
+            Vertice *c = new Vertice(j);
+            Vertice *aux = d[i][j].primeiro;
+            while (aux->getProximoVertice() != NULL)
+            {
+                aux = aux->getProximoVertice();
+            }
+            aux->setProximoVertice(c);
+        }
+    }
+
+    //Imprime uma matriz com o peso para ir de um vertice [i] para outro [j]
+    std::cout << std::endl;
+    std::cout << "-----Matriz de Pesos------" << std::endl;
+    for (int i = 0; i < tam; i++)
+    {
+        for (int j = 0; j < tam; j++)
+        {
+            std::cout << d[i][j].peso << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    // Desalocando memória
+    for (int i = 0; i < tam; i++)
+    {
+        for (int j = 0; j < tam; j++)
+        {
+            while (d[i][j].primeiro != NULL)
+            {
+                Vertice *aux = d[i][j].primeiro;
+                d[i][j].primeiro = d[i][j].primeiro->getProximoVertice();
+                delete aux; //Deleta cada vertice da lista
+            }
+        }
+        delete[] d[i]; //Deleta cada linha da matriz
+    }
+    delete[] d; //Deleta a matriz
+}
+
+/**
+ * Árvore Geradora de Prim
+ * */
+void Grafo::arvoreGeradoraPrim()
+{
+    using namespace std;
+
+    int tam = this->getOrdem();
+
+    struct No
+    {
+        Vertice *id;
+        float peso;
+    };
+
+    struct ComparaMinimo
+    {
+        bool operator()(No &a, No &b)
+        {
+            return a.peso > b.peso;
+        }
+    };
+
+    priority_queue<No, vector<No>, ComparaMinimo> minheap;
+    vector<No> caminho;
+    caminho.reserve(tam);
+
+    //Setando os valores iniciais
+    No primeiro;
+    Vertice *v = this->primeiro;
+    while (v != NULL)
+    {
+        No a;
+        a.id = v;
+        a.peso = INFINITO;
+        caminho[v->getId()] = a; // vetor ordenado de cada vertice por seu id
+        v = v->getProximoVertice();
+    }
+    vector<bool> inMST(tam, false); //Se o indice i está na lista da arvore minima. Todos começam com falso
+    vector<int> pais(tam, -1);      //Armazena o id do pai do indice i;
+    caminho[0].peso = 0;
+    inMST[0] = true; // Inicializa o primeiro vertice como raiz da arvore
+    pais[0] = 0;
+    minheap.push(caminho[0]);
+
+    float pesoTotalMinimo = 0;
+
+    while (!minheap.empty()) //varre a minheap
+    {
+        No u = minheap.top(); //guarda as informações de quem estava no topo da minheap
+        minheap.pop();
+        if (inMST[u.id->getId()] == false) //Verifica se quem estava no topo ja estava na arvore
+        {
+            pesoTotalMinimo += caminho[u.id->getId()].peso;
+        }
+
+        inMST[u.id->getId()] = true; //coloca na arvore
+
+        Aresta *a = u.id->getProximaAresta();
+        while (a != NULL) //varre as arestas do vertice no topo da minheap
+        {
+            float pesoAresta = a->getPeso();
+            //cout << pesoAresta;
+            int id_adj = a->getIdAdjacente();
+
+            if (inMST[id_adj] == false && caminho[id_adj].peso > pesoAresta) //Se o vertice ainda nao estiver na arvore
+            {                                                                //E sua presente aresta custar menos que
+                caminho[id_adj].peso = pesoAresta;                           //sua aresta anterior
+                caminho[id_adj].id->setId(id_adj);                           //Atuliza como menor caminho, entra na minheap
+                minheap.push(caminho[id_adj]);                               //E atuliza seu pai
+                pais[id_adj] = u.id->getId();
+            }
+
+            a = a->getProx();
+        }
+    }
+    /* Imprime quem é o pai de cada vertice na arvore */
+    if (debug)
+    {
+        for (int i = 1; i < tam; i++)
+        {
+            cout << "[ " << pais[i] << " - " << i << " ] => ";
+        }
+    }
+
+    cout << endl
+         << "Peso minimo: " << pesoTotalMinimo; //peso minimo para percorrer o grafo todo
+}
