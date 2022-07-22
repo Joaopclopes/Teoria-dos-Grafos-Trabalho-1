@@ -30,55 +30,64 @@ int menu() {
 }
 void selecionar(int selecao, Grafo *grafo) {
 
-  switch (selecao) {
-    //Sair;
-  case 0:
+  if (selecao == 0) {
     exit(0);
-    break;
-  case 1: // Fecho Transitivo Direto;
+    //Sair;
+  }
+  else if (selecao == 1){
+    // Fecho Transitivo Direto;
     int v;
     cout << "Digite o id do nó: ";
     cin >> v;
 
     grafo->transitivoDireto(v);
     cout << endl;
-    break;
-
-  case 2: // Fecho Transitivo Indireto;
+  }
+  else if (selecao == 2){ // Fecho Transitivo Indireto;
     int h;
     cout << "Digite o id do nó: ";
     cin >> h;
     grafo->transitivoIndireto(h);
     cout << endl;
-    break;
-
-  case 3: //Caminho Mínimo entre dois vértices - Dijkstra
+  }
+  else if (selecao == 3){//Caminho Mínimo entre dois vértices - Dijkstra
     //graph->dijkstra(output_file);
-    break;
-
-  case 4: // Caminho Mínimo entre dois vértices - Floyd
+  }
+  else if (selecao == 4){ // Caminho Mínimo entre dois vértices - Floyd
     //graph->floydWarshall(output_file);
-    break;
-
-  case 5: // Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Prim
+  }
+  else if (selecao == 5){ // Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Prim
     cout << "\nPara rodar o algoritmo de Prim, é preciso um subgrafo vértice induzido" << endl;
     //graph->agmPrim(graph->getVertInduz(), output_file);
-    break;
-
-  case 6: // Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Kruskal
+  }
+  else if (selecao == 6){ // Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Kruskal
     cout << "\nPara rodar o algoritmo de Kruskal, é preciso um subgrafo vértice induzido" << endl;
-    //graph->agmKruskal(graph->getVertInduz(), output_file);
-    break;
+    cout << "\nDigite quantos vertices tera o subgrafo vertice induzido" << endl;
+    // Vector para armazenar os ids dos vértices do subgrafo
+        vector<int> idvertices;
+        idvertices.clear();
 
-  case 7: // Caminhamento Profundidade destacando as Arestas de retorno
+        // Lendo os vértices do subgrafo
+        int num;
+        cin >> num;
+        for (int i = 0; i < num; i++){
+          int id;
+          cin >> id;
+          idvertices.push_back(id);
+        }
+        //Grafo * sub = grafo->getVertInduz(idvertices);
+        //sub->imprimeGrafo();
+
+
+    grafo->arvoreGeradoraKruskal(idvertices);
+  }
+  else if (selecao == 7){ // Caminhamento Profundidade destacando as Arestas de retorno
     grafo->busca_profundidade();
-    break;
-  
-  case 9: // Caminhamento Profundidade destacando as Arestas de retorno
+  }  
+  else if (selecao == 9){// Caminhamento Profundidade destacando as Arestas de retorno
     grafo->imprimeGrafo();
-    break;
-
-  default:
+  }
+  else {
     system("clear");
     cout << " Erro!!! Opção invalida." << endl;
   }
