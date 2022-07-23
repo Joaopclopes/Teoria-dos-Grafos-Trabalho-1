@@ -26,6 +26,8 @@ class Grafo {
         int totalArestas;
         int posicao; //para guarda a posição de inserção do no
 
+        void auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<int> *retorno,vector<string> *graf);
+
     /*std::string _trim(std::string linha);
     void _addAresta(Vertice* x, Vertice y, float peso, bool& inseriu);
     void _apagarAresta(Vertice* v, int id_y, bool& apagou);
@@ -73,7 +75,7 @@ class Grafo {
         void caminhoMinimoFloyd();
         void arvoreGeradoraPrim();
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);
-        void arvoreCaminhamentoProfundidade(Vertice *vertice); //arvore destacando arestas de retorno(letra i);
+        void arvoreCaminhamentoProfundidade(int id); //arvore destacando arestas de retorno(letra i);
         void aux_busca_profundidade(Vertice *vertice);
         void busca_profundidade();
         Grafo *getVertInduz(vector<int> idvertices);

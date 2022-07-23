@@ -257,21 +257,19 @@ void Grafo::leitura(ifstream &arquivo)
 void Grafo::transitivoDireto(int id)
 {
     cout << "Fecho transitivo direto do vertice:" << id << endl;
-    vector<int> idvertices;
-    idvertices.clear();
     if(this->getV(id)!=nullptr){
         this->limparVisitados();
         profundidade(this->getV(id));
         for (Vertice *vertice = this->getPrimeiro(); vertice!=nullptr; vertice = vertice->getProximoVertice()){
             if(vertice->getVisitado()){
-                idvertices.push_back(vertice->getId());
+                cout << vertice->getId() << "  ";
             }
         }
-    }
-    for(int i = 0; i < idvertices.size(); i++){
-        cout << idvertices[i] << " ";
-    }
     cout << endl;
+    }
+    else{
+        cout << "Vertice nao encontrado" << endl;
+    }
 }
 void Grafo::profundidade(Vertice *vertice)
 {
@@ -285,23 +283,36 @@ void Grafo::profundidade(Vertice *vertice)
 void Grafo::transitivoIndireto(int id)
 {
     cout << "Fecho transitivo indireto do vertice:" << id << endl;
-    Vertice *vertice = this->getPrimeiro();
-    vector<int> idvertices;
-    idvertices.clear();
-    while(vertice!=nullptr){
-        if(vertice->getId()!=id){
-            this->limparVisitados();
-            auxTransIndireto(vertice,id);
-            if(getV(id)->getVisitado()){
-            idvertices.push_back(vertice->getId());
+    Vertice *indice = this->getV(id);    // Nó alvo que recebe o id passado como parâmetro.
+    Vertice *primeiro = this->getPrimeiro(); // Nó através do qual será feita a verificação se target é acessível.
+
+    // Verifica se o nó target existe.
+    if (indice != nullptr)
+    {
+
+        // Realiza a busca em profundidade para todos os nós do grafo.
+        while (primeiro != nullptr)
+        {
+
+            this->limparVisitados(); // Chama a função para setar todos os nós do grafo como não visitados.
+
+            this->profundidade(primeiro); // Realiza o caminho em profundidade no grafo a partir do nó source.
+
+            // Se target foi visitado no caminho em profundidade, imprime o id de source.
+            if (indice->getVisitado())
+            {
+                cout << primeiro->getId() << "  ";
+
             }
+            primeiro = primeiro->getProximoVertice();
         }
-        vertice = vertice->getProximoVertice();
+
     }
-    for(int i = 0; i < idvertices.size(); i++){
-        cout << idvertices[i] << " ";
+    // Se target não existe, imprime uma mensagem de erro.
+    else
+    {
+        cout << "Vertice nao encontrado" << endl;
     }
-    cout << endl;
 }
 void Grafo::auxTransIndireto(Vertice *vertice, int id)
 {
@@ -642,28 +653,28 @@ Grafo *Grafo::getVertInduz(vector<int> idvertices)
         return nullptr;
     }
 }
-// Estrutura e funções auxiliares para o algoritmo de Kruskal
-struct SubArvore
+// Estrutura e funções para o algoritmo de Kruskal
+struct Arvore
 {
     int pai;
     int ordem;
 };
 
-// Função para encontrar em qual subárvore está o nó de id n. Usada no Kruskal
-int qualSubArvore(SubArvore subarvores[], int n)
+// Função para encontrar em qual arvore está o o vertice de id n. Usada no Kruskal
+int qualArvore(Arvore subarvores[], int n)
 {
     if (subarvores[n].pai != n)
-        subarvores[n].pai = qualSubArvore(subarvores, subarvores[n].pai);
+        subarvores[n].pai = qualArvore(subarvores, subarvores[n].pai);
 
     return subarvores[n].pai;
 }
 
-// Função para unir duas subárvores de dois nós u e v. Usada no Kruskal
-void unirSubArvores(SubArvore subarvores[], int u, int v)
+// Função para unir duas arvores de dois nós u e v. Usada no Kruskal
+void unirArvores(Arvore subarvores[], int u, int v)
 {
     // Encontrando os índices das subárvores
-    int subU = qualSubArvore(subarvores, u);
-    int subV = qualSubArvore(subarvores, v);
+    int subU = qualArvore(subarvores, u);
+    int subV = qualArvore(subarvores, v);
 
     // Unindo a menor com a maior
     if (subarvores[subU].ordem < subarvores[subV].ordem)
@@ -680,48 +691,61 @@ void unirSubArvores(SubArvore subarvores[], int u, int v)
 // Função para imprimir a AGM via Kruskal
 void imprimirKruskal(vector<pair<int, pair<int, int>>> &arestas, vector<int> &agm)
 {
+    //funcao para imprimir agm via Kruskal, com a criacao do arquivo dot para uso no graphviz
+    ofstream output_Kruskal;
+    output_Kruskal.open("output_Kruskal.dot", ios::out | ios::trunc);
+    output_Kruskal << "graph{\n";
+
     int peso = 0;
     cout << "\nÁRVORE GERADORA MÍNIMA via Kruskal\n"
          << endl;
-    cout << "graph {" << endl;
     for (int i = 0; i < agm.size(); i++)
     {
-        if (arestas[agm[i]].second.first == arestas[agm[i]].second.second)
+        if (arestas[agm[i]].second.first == arestas[agm[i]].second.second){
             cout << "  " << arestas[agm[i]].second.first << endl;
+            output_Kruskal << arestas[agm[i]].second.first << ";" << endl;
+        }
         else
         {
             cout << "  " << arestas[agm[i]].second.first << " -- " << arestas[agm[i]].second.second;
-            cout << " [label = " << arestas[agm[i]].first << "]" << endl;
+            cout << " Peso = " << arestas[agm[i]].first  << endl;
             peso += arestas[agm[i]].first;
+            output_Kruskal << arestas[agm[i]].second.first << " -- " << arestas[agm[i]].second.second;
+            output_Kruskal << "[label = " << arestas[agm[i]].first << "];" << endl;
+
         }
+
     }
-    cout << "}" << endl;
+    cout << endl;
     cout << "\nPeso da AGM: " << peso << endl;
     cout << "\nKruskal concluído com sucesso!" << endl;
+
+    output_Kruskal << "}";
+    output_Kruskal.close();
+    system("dot -Tpng output_Kruskal.dot -o output_Kruskal.png");
 }
 // ALGORITMO DE KRUSKAL
 // para encontrar a Árvore Geradora Mínima
 void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
 {
-    Grafo* subgrafo = this->getVertInduz(vertices);
-    cout << "\nIniciando a execução do algoritmo de Kruskal..." << endl;
+    Grafo* subgrafo = this->getVertInduz(vertices); //criando um subgrafo com o conjunto de vertices dado
+    cout << "\nArvore Geradora Minima pelo Algoritmo de Kruskal" << endl;
 
-    // 1º PASSO: Vector para armazenar as arestas do grafo
-
-    vector<pair<int, pair<int, int>>> arestas; //vector<peso, noOrigem, noDestino>
+    //armazenar as arestas do grafo
+    vector<pair<int, pair<int, int>>> arestas; //vector<peso, vertice de origem, vertice de destino>
     arestas.clear();
 
     subgrafo->limparVisitados();
     Vertice *noAux = subgrafo->getPrimeiro();
     Aresta *arestaAux = noAux->getPrimeira();
 
-    int u = noAux->getId(); // id do nó de origem
+    int u = noAux->getId(); // id do vertice de origem
     int v;
 
     if (arestaAux != nullptr)
-        v = arestaAux->getIdAdjacente(); //id do nó destino
+        v = arestaAux->getIdAdjacente(); //id do vertice destino
 
-    // Percorrer todas as arestas do Grafo
+    // Percorrer as arestas do Grafo
     for (int i = 1; i < subgrafo->getOrdem(); i++)
     {
         if (arestaAux == nullptr)
@@ -729,11 +753,11 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
 
         while (arestaAux != nullptr)
         {
-            // Coloca a aresta no vetor de arestas
+            // armazena a aresta no vetor de arestas
             if (!subgrafo->getV(v)->getVisitado())
                 arestas.push_back({arestaAux->getPeso(), {u, v}});
 
-            // Atualiza os auxiliares se a aresta não for null
+            // se a aresta não for null muda os valores dos auxiliares
             arestaAux = arestaAux->getProx();
             if (arestaAux != nullptr)
             {
@@ -749,31 +773,25 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
             v = arestaAux->getIdAdjacente();
     }
 
-    cout << "1º passo concluído com sucesso" << endl;
 
-    // 2º PASSO: Ordenar as arestas por peso do menor para o maior
-
+    //ordenar as arestas
     sort(arestas.begin(), arestas.end());
-    cout << "2º passo concluído com sucesso" << endl;
 
-    // 3º PASSO: Criar subávores cada uma contendo um nó isolado
-
+    //criando subarvores com um vertice
     int V = subgrafo->getOrdem();
-    SubArvore *subarvores = new SubArvore[(V * sizeof(SubArvore))]; // vetor para armazenar todas as subárvores
+    Arvore *subarvores = new Arvore[(V * sizeof(Arvore))]; //armazenar todas as subárvores
 
     for (int i = 0; i < V; i++)
     {
         subarvores[i].pai = i;
         subarvores[i].ordem = 1;
     }
-    cout << "3º passo concluído com sucesso" << endl;
 
-    // 4º PASSO: Montar a Árvore Geradora Mínima
-
-    vector<int> agm; // vetor com o índice associado à posição de cada aresta da árvore geradora mínima no vector 'arestas' do subgrafo
+    //arvore geradora minima
+    vector<int> agm; // vetor com o índice da posição de cada aresta da agm do vetor arestas
     agm.clear();
 
-    // Iterar até atingir condição de parada
+    //algoritmo 
     int cont = 0;
     while (agm.size() < V - 1 && cont < arestas.size())
     {
@@ -785,17 +803,15 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
             agm.push_back(cont);
 
         // Se u e v não estão na mesma subárvore
-        if (qualSubArvore(subarvores, subgrafo->getV(u)->getPosicao()) != qualSubArvore(subarvores, subgrafo->getV(v)->getPosicao()))
+        if (qualArvore(subarvores, subgrafo->getV(u)->getPosicao()) != qual(subarvores, subgrafo->getV(v)->getPosicao()))
         {
             agm.push_back(cont);
-            unirSubArvores(subarvores, subgrafo->getV(u)->getPosicao(), subgrafo->getV(v)->getPosicao());
+            unirArvores(subarvores, subgrafo->getV(u)->getPosicao(), subgrafo->getV(v)->getPosicao());
         }
         cont++;
     }
-    cout << "4º passo concluído com sucesso" << endl;
 
-    // 5º PASSO: Imprimir a Árvore Geradora Mínima e seu peso
-
+    //impressao da agm
     imprimirKruskal(arestas, agm);
 
     delete[] subarvores;
@@ -817,4 +833,63 @@ Vertice *Grafo::getVerticePosicao(int posicao)
 
     //retorna o node ou null caso nao encontre
     return nullptr;
+}
+void Grafo::arvoreCaminhamentoProfundidade(int id)
+{
+    cout << "Caminhamento em profundidade, destacando arestas de retorno" << endl;
+    // variáveis
+    this->limparVisitados();
+    vector<int> retorno; //vetor para guardar os indices dos vertices que relacinados com as arestas de retorno
+    vector<int> vertices; //vetor para guardar o indices dos vertices da arvore em profundidade
+    vector<string> grafo; //vetor de string para gerar arquiv dot
+
+    //Checar se o id do vertice passado como parametro é válido
+    if(this->getV(id)==nullptr){
+        cout << "Indice invalido, vertice nao existe no grafo" << endl;
+    }
+
+    else{
+        Vertice *vertice = this->getV(id);
+        this->auxCaminhamentoProfundidade(vertice, &vertices, &retorno, &grafo); // chama a função auxiliar
+
+        cout << "\nÁrvore em Profundidade\n";
+        for (int i = 0; i < vertices.size(); i++)
+            cout << vertices[i] << " -- ";
+
+        cout << "\n\nArestas de Retorno\n";
+        for (int i = 0; i < retorno.size(); i++)
+            cout << retorno[i] << " -- ";
+        cout << endl;
+
+        //GERANDO ARQUIVO DOT PARA USO NO GRAPHVIZ
+        ofstream output_profundidade;
+        output_profundidade.open("output_profundidade.dot", ios::out | ios::trunc);
+        output_profundidade << "grafo{\n";
+        for (int i = 0; i < grafo.size(); i++)
+        {
+            output_profundidade << grafo.at(i) << endl;
+        }
+        output_profundidade << "}";
+        output_profundidade.close();
+        system("dot -Tpng output_profundidade.dot -o output_profundidade.png");
+
+        retorno.clear();
+        vertices.clear();
+        grafo.clear();
+    }
+}
+void Grafo::auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<int> *retorno,vector<string> *graf)
+{
+    //funcao auxiliar para caminhamento em profundidade destacando as arestas de retorno
+    findG->push_back(v->getId());
+    v->setVisitado(true);
+    for (Aresta *aresta = v->getPrimeira(); aresta != nullptr; aresta = aresta->getProx())
+    {
+        if (!getV(aresta->getIdAdjacente())->getVisitado())
+        {
+            graf->push_back(to_string(v->getId()) + "--" + to_string(aresta->getIdAdjacente()));
+            auxCaminhamentoProfundidade(getV(aresta->getIdAdjacente()), findG, retorno,graf);
+        }
+    }
+    retorno->push_back(v->getId()); 
 }
