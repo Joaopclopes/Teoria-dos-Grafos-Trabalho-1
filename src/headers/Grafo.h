@@ -67,7 +67,8 @@ class Grafo {
         void limparVisitados();
         Vertice *getVerticePosicao(int posicao);
 
-        int  Kcoeficienteagrupamento(int *IDs);
+        int  Kcoeficienteagrupamento();
+        double KcoeficienteagrupamentoGlobal(Grafo g);
 
 
         void transitivoDireto(int id);
@@ -78,7 +79,7 @@ class Grafo {
         void caminhamentoProfundidade(int id_inicio);
         void caminhoMinimoDijkstra(int id_inicio ,int id_final);
         void caminhoMinimoFloyd();
-        void arvoreGeradoraPrim(Grafo *subgrafo);
+        void arvoreGeradoraPrim();
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);
         void arvoreCaminhamentoProfundidade(int id); //arvore destacando arestas de retorno(letra i);
         void aux_busca_profundidade(Vertice *vertice);
