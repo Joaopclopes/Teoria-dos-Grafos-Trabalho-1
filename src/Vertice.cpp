@@ -14,7 +14,6 @@ Vertice::Vertice()
     this->proxV = nullptr;
     this->ultima = nullptr;
     this->visitado = false;
-    this->posicao = 0;
 
 }
 Vertice::Vertice(int id)
@@ -37,14 +36,6 @@ Vertice::Vertice(int id, float peso)
     this->proxV = nullptr;
     this->ultima = nullptr;
     this->visitado = false;
-}
-void Vertice::setPosicao(int posicao)
-{
-    this->posicao = posicao;
-}
-int Vertice::getPosicao()
-{
-    return this->posicao;
 }
 int Vertice::getId()
 {
@@ -135,19 +126,19 @@ bool Vertice::procurarAresta(int id)
     }
     return false;
 }
-void Vertice::inserirAresta(int id, int target_position, float peso)
+void Vertice::inserirAresta(int id,float peso)
 {
     // Verifica se há pelo menos uma aresta no nó
     if(this->primeira != nullptr){
         // Alocando a nova aresta e mantendo a integridade da lista de aresta
-        Aresta* aresta = new Aresta(id,target_position,peso);
+        Aresta* aresta = new Aresta(id,peso);
         aresta->setPeso(peso);
         this->ultima->setProxima(aresta);
         this->ultima = aresta;
     }
     else{
          // Alocando a nova aresta e mantendo a integridade da lista de aresta
-        this->primeira = new Aresta(id, target_position,peso);
+        this->primeira = new Aresta(id,peso);
         this->primeira->setPeso(peso);
         this->ultima = this->primeira;
 

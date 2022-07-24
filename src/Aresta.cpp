@@ -19,12 +19,11 @@ Aresta::Aresta(int idAdjacente){
     this->setVisitado(false);
 }
 
-Aresta::Aresta(int idAdjacente,  int target_position, float peso){
+Aresta::Aresta(int idAdjacente, float peso){
     this->setIdAdjacente(idAdjacente);
     this->setPeso(peso);
     this->setProxima(nullptr);
     this->setVisitado(false);
-    this->target_position = target_position;
 }
 void Aresta::setVisitado(bool visitado)
 {
