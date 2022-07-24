@@ -11,12 +11,12 @@ class Aresta {
     float peso;
     Aresta* prox;
     bool visitado;
-    int target_position;
+    int idAdjacentePosicao;
 
     public:
     Aresta();
     Aresta(int idAdjacente);
-    Aresta(int idAdjacente, int target_position,float peso);
+    Aresta(int idAdjacente, int idAdjacentePosicao,float peso);
 
     int getIdAdjacente();
     void setIdAdjacente(int id);
@@ -26,6 +26,7 @@ class Aresta {
     void setProxima(Aresta* prox);
     void setVisitado(bool visitado);
     bool getVisitado();
+    int getIdAdjacentePosicao();
 };
 
 #endif // ARESTA_H

@@ -17,6 +17,8 @@
 using namespace std;
 
 #define INFINITO std::numeric_limits<float>::max()
+#define INF std::numeric_limits<int>::max()
+
 
 //Construtor
 Grafo::Grafo(int ordem,bool direcionado,bool peso_aresta, bool peso_vertice)
@@ -401,7 +403,7 @@ vector<int> Grafo::CaminhoMinDjkstra(No *a,No *b)
  * pesos, onde cada item da matriz m[i][j] representa o
  * peso do nó i ao nó j.
  * */
-void Grafo::caminhoMinimoFloyd()
+/*void Grafo::caminhoMinimoFloyd()
 {
     // Estrutura Caminho para armazenar os pesos das arestas e o primeiro vetor do caminho
     struct Caminho
@@ -520,15 +522,14 @@ void Grafo::caminhoMinimoFloyd()
         delete[] d[i]; //Deleta cada linha da matriz
     }
     delete[] d; //Deleta a matriz
-}
+}*/
 
 /**
  * Árvore Geradora de Prim
  * */
-void Grafo::arvoreGeradoraPrim()
+/*void Grafo::arvoreGeradoraPrim(vector<int> vertices)
 {
-    using namespace std;
-
+    Grafo *subgrafo = this->getVertInduz(vertices);
     int tam = this->getOrdem();
 
     struct No
@@ -551,7 +552,7 @@ void Grafo::arvoreGeradoraPrim()
 
     //Setando os valores iniciais
     No primeiro;
-    Vertice *v = this->primeiro;
+    Vertice *v = subgrafo->getPrimeiro();
     while (v != NULL)
     {
         No a;
@@ -597,9 +598,9 @@ void Grafo::arvoreGeradoraPrim()
 
             a = a->getProx();
         }
-    }
+    }*/
     /* Imprime quem é o pai de cada vertice na arvore */
-    if (debug)
+    /*if (debug)
     {
         for (int i = 1; i < tam; i++)
         {
@@ -609,7 +610,7 @@ void Grafo::arvoreGeradoraPrim()
 
     cout << endl
          << "Peso minimo: " << pesoTotalMinimo; //peso minimo para percorrer o grafo todo
-}
+} */
 Grafo *Grafo::getVertInduz(vector<int> idvertices)
 {
     // Criar o subgrafo vértice induzido
@@ -735,6 +736,7 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
     vector<pair<int, pair<int, int>>> arestas; //vector<peso, vertice de origem, vertice de destino>
     arestas.clear();
 
+    this->limparVisitados();
     subgrafo->limparVisitados();
     Vertice *noAux = subgrafo->getPrimeiro();
     Aresta *arestaAux = noAux->getPrimeira();
@@ -749,7 +751,7 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
     for (int i = 1; i < subgrafo->getOrdem(); i++)
     {
         if (arestaAux == nullptr)
-            arestas.push_back({INFINITO, {u, u}});
+            arestas.push_back({INF, {u, u}});
 
         while (arestaAux != nullptr)
         {
@@ -803,7 +805,7 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
             agm.push_back(cont);
 
         // Se u e v não estão na mesma subárvore
-        if (qualArvore(subarvores, subgrafo->getV(u)->getPosicao()) != qual(subarvores, subgrafo->getV(v)->getPosicao()))
+        if (qualArvore(subarvores, subgrafo->getV(u)->getPosicao()) != qualArvore(subarvores, subgrafo->getV(v)->getPosicao()))
         {
             agm.push_back(cont);
             unirArvores(subarvores, subgrafo->getV(u)->getPosicao(), subgrafo->getV(v)->getPosicao());
@@ -892,4 +894,420 @@ void Grafo::auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<i
         }
     }
     retorno->push_back(v->getId()); 
+}
+// Função para imprimir a AGM via Prim
+void imprimirPrim(Grafo *subgrafo, vector<int> &agm)
+{
+    ofstream output_Prim;
+    output_Prim.open("output_Prim.dot", ios::out | ios::trunc);
+    output_Prim << "graph{\n";
+
+    int peso = 0;
+    cout << "\nÁRVORE GERADORA MÍNIMA via Prim\n"
+         << endl;
+    cout << "graph {" << endl;
+    for (int i = 0; i < subgrafo->getOrdem(); i++)
+    {
+        if (agm[i] != INF)
+        {
+            int id_destino = subgrafo->getVerticePosicao(i)->getId();
+            if (agm[i] == id_destino){
+                cout << "  " << agm[i] << endl;
+                output_Prim << agm[i] << ";" << endl;
+            }
+            else
+            {
+                cout << "  " << agm[i] << " -- " << id_destino;
+                cout << " Peso = " << subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso() << endl;
+                peso += subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso();
+                output_Prim << agm[i] << " -- " << id_destino;
+                output_Prim << "[label = " << subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso()<< "];" << endl;
+            }
+        }
+    }
+    cout << "}" << endl;
+    cout << "\nPeso da AGM: " << peso << endl;
+    cout << "\nPrim concluído com sucesso!" << endl;
+
+    output_Prim << "}";
+    output_Prim.close();
+    system("dot -Tpng output_Prim.dot -o output_Prim.png");      
+}
+// Função para auxiliar o algoritmo de Prim. Retorna a posição do nó com menor custo de vizinhança que não esteja na agm
+int posicaoMenor(vector<int> &custoViz, vector<bool> &naAGM)
+{
+    int min = INF;
+    int pos;
+    bool tem_pos = false;
+    for (int i = 0; i < custoViz.size(); i++)
+    {
+        if (custoViz[i] < min && naAGM[i] == false)
+        {
+            min = custoViz[i];
+            pos = i;
+            tem_pos = true;
+        }
+    }
+    if (tem_pos)
+        return pos;
+    else
+    {
+        for (int i = 0; i < custoViz.size(); i++)
+        {
+            if (custoViz[i] == min && naAGM[i] == false)
+            {
+                min = custoViz[i];
+                pos = i;
+                tem_pos = true;
+                return pos;
+            }
+        }
+    }
+    return pos;
+}
+void Grafo::arvoreGeradoraPrim(vector<int> vertices)
+{
+    Grafo *subgrafo = this->getVertInduz(vertices);
+    cout << "\nIniciando a execução do algoritmo de Prim..." << endl;
+
+    //Organizar os custos das vizinhanças dos nós em um vector
+
+    // Vector para armazenar os custoViz dos nós do subgrafo. O índice no vector é compatível com a posição do nó no subgrafo
+    vector<int> custo;
+    custo.clear();
+
+    // Vector para checar se o nó já foi inserido na agm
+    vector<bool> naAGM(subgrafo->getOrdem(), false);
+
+    // O primeiro nó do vector será inicializado com custoViz = 0
+    custo.push_back(0);
+
+    // Os demais nós serão inicializados com custoViz = INFINITO
+    for (int i = 1; i < subgrafo->getOrdem(); i++)
+        custo.push_back(INF);
+
+    // 2º PASSO: Criar Arvore Geradora Minima -> vetor com os pais de cada nó da agm ou INF caso nao tenha pai
+
+    // Os índices da agm corresponderão à posição do nó no subgrafo
+    // A raiz da agm, indice 0, será o primeiro nó do subgrafo, portanto não terá pai
+    vector<int> agm(subgrafo->getOrdem(), INF);
+
+    // 3º PASSO: Iterar pelos vértices verificando o custoViz e inserindo na agm
+
+    int cont = 0;
+    while (cont < subgrafo->getOrdem())
+    {
+        // Pega o nó com menor custoViz que ainda não está na agm
+        int pos_menor = posicaoMenor(custo, naAGM);         // Posição do nó
+        int u = subgrafo->getVerticePosicao(pos_menor)->getId(); // ID do nó
+        // Atualiza naAGM, pois, nessa iteração, u será colocado na agm
+        naAGM[pos_menor] = true;
+
+        // Iterar pelos nós v adjacentes a u e verificar se o peso da aresta entre eles é menor que o seu custoViz
+        Aresta *aux = subgrafo->getV(u)->getPrimeira();
+        if (aux == nullptr) // nó não tem arestas
+            agm[pos_menor] = u;
+        else
+        {
+            while (aux != nullptr)
+            {
+                int v = aux->getIdAdjacente();                      // ID de v
+                int pos_v = subgrafo->getV(v)->getPosicao(); // posição de v
+                if (!naAGM[pos_v])                               // executa caso o nó v ainda não esteja na agm
+                {
+                    // Se o peso da aresta (u, v) for menor que o custoViz de v, atualiza o custoViz com o valor do peso
+                    if (aux->getPeso() < custo[pos_v])
+                    {
+                        custo[pos_v] = aux->getPeso();
+                        // Atualiza o pai de v na agm
+                        agm[pos_v] = u;
+                    }
+                }
+                aux = aux->getProx();
+            }
+        }
+        cont++;
+    }
+
+    // 4º PASSO: Imprimir a Árvore Geradora Mínima e seu peso
+
+    imprimirPrim(subgrafo, agm);
+
+    return;
+}
+void Grafo::caminhoMinimo(list<int> &antecessor)
+{
+    string arco, entrada;                            //Para a escrita no outFile, se for arco '->' se for aresta '--'
+    int primeiro = antecessor.front(), tVertice, sVertice; //Usado para armazenar o primeiro vertice
+
+    Vertice *v = getVerticePosicao(primeiro);
+    sVertice = v->getId();
+    Vertice *aux = nullptr; //No auxiliar
+    Aresta *aresta = nullptr;  //Edge auxiliar para pegar o peso
+    cout << "\nCAMINHO MINIMO\n"
+         << endl;
+    while (!antecessor.empty())
+    {                                   //Passa por toda a lista de ordem de acesso em buscando o ID
+        v = getVerticePosicao(primeiro); //no recebe o node que é o primeiro no caminho minimo
+        tVertice = v->getId();
+
+        sVertice = tVertice; //Atualiza o valor do sNode
+
+        cout << v->getId() << "--" << arco;   //Imprime para o usuário
+        antecessor.pop_front();        //Remove o primeiro elemento da lista dos antecessor
+        primeiro = antecessor.front(); //Atualiza o valor do primeiro
+        aux = v;                    //Atualiza o valor do noAux
+    }
+}
+void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
+{ //
+    // cost[] e matrizAdjac[] armazenam o menor caminho
+    int **cost, **path;
+    int **matrizAdjac;
+    path = new int *[this->getOrdem()];
+    cost = new int *[this->getOrdem()];
+    matrizAdjac = new int *[this->getOrdem()];
+
+    //inicializa as matrizes
+    for (int i = 0; i < this->getOrdem(); i++)
+    {
+        path[i] = new int[this->getOrdem()];
+        cost[i] = new int[this->getOrdem()];
+        matrizAdjac[i] = new int[this->getOrdem()];
+        for (int j = 0; j < this->getOrdem(); j++)
+        {
+            matrizAdjac[i][j] = INF;
+            if (i == j)
+            {
+                matrizAdjac[i][j] = 0;
+            }
+        }
+    }
+
+    Vertice *v = this->getPrimeiro();
+    Aresta *a;
+    while (v != nullptr)
+        {
+            a = v->getPrimeira();
+
+            while (a != nullptr)
+            {
+                    matrizAdjac[v->getId()][a->getIdAdjacente()] = a->getPeso();
+
+                a = a->getProx();
+            }
+            v = v->getProximoVertice();
+        }
+
+    // Preenche cost[] e path[]
+    for (int v = 0; v < this->getOrdem(); v++)
+    {
+        for (int u = 0; u < this->getOrdem(); u++)
+        {
+            // inicialmente o cost sera igual ao peso da aresta
+            cost[v][u] = matrizAdjac[v][u];
+            if (v == u)
+                path[v][u] = 0;
+            else if (cost[v][u] != INF)
+                path[v][u] = v;
+            else
+                path[v][u] = -1;
+        }
+    }
+
+    //algoritmo de Floyd
+    //como a complexidade deste algoritmo é O(n^3), para instancias muito grandes ele demora a executar
+    for (int k = 0; k < this->getOrdem(); k++)
+    {
+        for (int v = 0; v < this->getOrdem(); v++)
+        {
+            for (int u = 0; u < this->getOrdem(); u++)
+            {
+                // caso o vertice k esteja no menor path de v para u, então o valor da posição cost[v][u] é atualizado
+                if (cost[v][k] != INF && cost[k][u] != INF && cost[v][k] + cost[k][u] < cost[v][u])
+                {
+                    cost[v][u] = cost[v][k] + cost[k][u];
+                    path[v][u] = path[k][u];
+                }
+            }
+
+            // se os elementos da diagonal se tornam negativos, o grafo atua em um ciclo de peso negativo
+            if (cost[v][v] < 0)
+            {
+                cout << "** Ciclo de peso negativo!! **"<<endl;
+                return;
+            }
+        }
+    }
+
+    //Resultado em tela
+    printFloyd(path, cost, idOrig, idDest);
+
+    for (int i = 0; i < this->getOrdem(); i++)
+    {
+        delete[] path[i];
+        delete[] cost[i];
+        delete[] matrizAdjac[i];
+    }
+    delete[] path;
+    delete[] cost;
+    delete[] matrizAdjac;
+    cout << "-------------------------------------------------------------------" << endl;
+
+    getchar();
+    getchar();
+}
+
+//Função para imprimir em tela o resultado
+
+void Grafo::printFloyd(int **path, int **cost, int idOrig, int idDest)
+{
+    cout << "-------------------------------FLOYD-------------------------------" << endl;
+    cout << "[caminho minimo entre os nos " << idOrig << " e " << idDest << " ]" << " - custo do caminho minimo" << endl;
+    cout << "-------------------------------------------------------------------" << endl;
+
+    if(cost[idOrig][idDest]==INF){
+        cout<< "[ "<<idOrig << ", "<< idDest<<"]"<< " - " <<"Nao existe caminho"<<endl;
+    }
+    else if(idOrig == idDest)
+    {
+        cout<< "[ " << idOrig << ", "<<idDest<< "] "<< " - "<< "0"<< endl;
+    }
+    else{
+        cout << "[" << idOrig << ", ";
+        printPathFloyd(path, idOrig, idDest);
+        cout << idDest << "] - ";
+        cout<< cost[idOrig][idDest] << endl;
+    }
+}
+
+
+//Auxiliar para imprimir caminho minimo no algoritimo de Floyd
+
+void Grafo::printPathFloyd(int **path, int idOrig, int idDest)
+{
+        if (path[idOrig][idDest] == idOrig)
+        return;
+
+        printPathFloyd(path, idOrig, path[idOrig][idDest]);
+        cout << path[idOrig][idDest] << ", ";
+
+}
+void Grafo::saidaDijkstra(int antecessor[], int idOrigem, int idDestino)
+{
+
+    string arco;
+    int noAnterior, primeiro, tNode, sNode; //Usado para armazenar o vertice anterior, e auxiliar na escrita no arquivo dot
+
+    list<int> ordemAcesso; //Lista contendo a ordem de acesso dos vertices
+
+    ordemAcesso.push_front(idDestino);  //Armazena na lista na ordem de acesso dos vertices,
+    noAnterior = antecessor[idDestino]; //apartir de seus anteriores, começando pelo nó target
+
+    while (noAnterior != idOrigem)
+    {
+        ordemAcesso.push_front(noAnterior);
+        noAnterior = antecessor[noAnterior];
+    }
+    ordemAcesso.push_front(idOrigem); //Insere o nó Source como o primeiro a ser acessado
+    primeiro = ordemAcesso.front();
+
+    caminhoMinimo(ordemAcesso);
+}
+float Grafo::caminhoMinimoDijkstra(int idOrigem, int idDestino)
+{
+    Vertice *origem, *destino;
+    int distancia;
+
+    if (idOrigem == idDestino)
+    {
+        cout << "\n\nA distância é: " << 0 << endl;
+        return 0;
+    } //Encerá caso seja o mesmo no
+
+    origem = getV(idOrigem); //Busca o no
+    destino = getV(idDestino); //Busca o no
+
+    if (origem != nullptr && destino != nullptr)
+    {
+
+        int pSource = origem->getPosicao(), pTarget = destino->getPosicao(), distancia = INF, V = getOrdem();
+        int ver = 0, c_edge = 0, u;
+
+        int *distance = new int[V];  //Vetor para os distâncias entre a posição do noSorce e os demais
+        int *antec = new int[V];     //Vetor para os antecessores
+        bool *visited = new bool[V]; //Vetor para as posições já visitadas
+        for (int i = 0; i < V; i++)
+        {
+            distance[i] = INF;
+            visited[i] = false;
+        }                      //Inicializador dos vetores visitados e distância
+        distance[pSource] = 0; //Distância do vertice para ele mesmo
+
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> fp; //Fila de prioridade para os pares distancia e vertice
+
+        fp.push(make_pair(distance[pSource], pSource)); //Adiciona o par vetor distância e
+
+        pair<int, int> p = fp.top(); //Adiciona o p na fila de prioridade
+
+        Vertice *vertice = nullptr;
+        Aresta *aresta = nullptr;
+
+        while (!fp.empty())
+        {
+
+            pair<int, int> p = fp.top(); //Pega o do topo
+            u = p.second;                //Obtem o vértice
+            fp.pop();                    //Remove da lista de prioridade
+            if (visited[u] == false)
+            {
+                visited[u] = true; //Marca o vertice como visitado
+                vertice = getVerticePosicao(u);
+                if (vertice != nullptr) //Busca o no pela posição
+                    aresta = vertice->getPrimeira();
+                else
+                    aresta = nullptr; //Pega a primeira aresta do no
+
+                while (aresta != nullptr)
+                { //Passa por todas as arestas do vertice u
+
+                    if (!getPeso_aresta())
+                        c_edge = 1; //Para caso não haja pesso a distância será 1 por salto
+                    else
+                        c_edge = aresta->getPeso();
+
+                    ver = aresta->getIdAdjacentePosicao(); //Pega a posição do no Target dessa aresta
+
+                    if (distance[ver] > (distance[u] + c_edge))
+                    {                                           //Verifica se a distância é menor
+                        antec[ver] = u;                         //Atualiza o antecessor
+                        distance[ver] = (distance[u] + c_edge); //Atualiza a distância
+                        fp.push(make_pair(distance[ver], ver)); //Adiciona o vertice na fila de prioridade
+                    }
+                    aresta = aresta->getProx(); //Avança para o a proxima aresta do vertice
+                }
+            }
+        }
+
+        distancia = distance[pTarget];
+
+        delete[] distance; //Desalocando o vetore usado
+        delete[] visited;  //Desalocando o vetore usado
+
+        if (distancia < INF)
+            saidaDijkstra(antec, pSource, pTarget); //Imprime todo a lista na ordem de acesso
+
+        delete[] antec;
+        cout << "\n\nA distância é: " << distancia << endl;
+        return distancia;
+    }
+    else
+    {
+
+        if (origem == nullptr)
+            cout << "Source node não existe nesse grafo" << endl;
+        if (destino == nullptr)
+            cout << "Target node não existe nesse grafo" << endl;
+        return -1;
+    }
 }

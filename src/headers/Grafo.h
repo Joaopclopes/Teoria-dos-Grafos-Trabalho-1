@@ -11,6 +11,7 @@
 #include <fstream>
 #include <vector>
 #include <forward_list>
+#include <list>
 
 using namespace std;
 
@@ -27,11 +28,13 @@ class Grafo {
         int posicao; //para guarda a posição de inserção do no
 
         void auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<int> *retorno,vector<string> *graf);
-
-    /*std::string _trim(std::string linha);
-    void _addAresta(Vertice* x, Vertice y, float peso, bool& inseriu);
-    void _apagarAresta(Vertice* v, int id_y, bool& apagou);
-    //std::forward_list<Vertice> auxGuloso(float alfa);*/
+        void saidaFloyd(int **pred, Vertice *origem, Vertice *destino);
+        void caminhoMinimo(list<int> &antecessor);
+        int **iniciaDistanciaFloyd(int **distancia, int tam);
+        int **iniciaAnterioresFloyd(int **anteriores, int tam);
+        void saidaDijkstra(int antecessor[], int idOrigem, int idDestino);
+        void printFloyd(int **path, int **cost, int idOrig, int idDest);
+        void printPathFloyd(int **path, int idOrig, int idDest);
 
     public:
         bool debug = false;
@@ -71,9 +74,9 @@ class Grafo {
         void auxTransIndireto(Vertice *vertice, int id);
         void caminhamentoLargura(int id_inicio);
         void caminhamentoProfundidade(int id_inicio);
-        void caminhoMinimoDijkstra(int id_inicio);
-        void caminhoMinimoFloyd();
-        void arvoreGeradoraPrim();
+        float caminhoMinimoDijkstra(int idOrigem, int idDestino);
+        void caminhoMinimoFloyd(int idOrigem, int idDestino);
+        void arvoreGeradoraPrim(vector<int> vertices);
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);
         void arvoreCaminhamentoProfundidade(int id); //arvore destacando arestas de retorno(letra i);
         void aux_busca_profundidade(Vertice *vertice);

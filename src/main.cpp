@@ -62,14 +62,26 @@ void selecionar(int selecao, Grafo *grafo) {
   }
   else if (selecao == 5){ 
     //Caminho Mínimo entre dois vértices - Dijkstra
+    int idOrigem, idDestino;
+    cout << "Digite o vertice de origem" << endl;
+    cin >> idOrigem;
+    cout << "Digite o vertice de destino" << endl;
+    cin >> idDestino;
+    grafo->caminhoMinimoDijkstra(idOrigem,idDestino);
   }
   else if (selecao == 6){ 
     //Caminho Mínimo entre dois vértices - Floyd
+    int idOrigem, idDestino;
+    cout << "Digite o vertice de origem" << endl;
+    cin >> idOrigem;
+    cout << "Digite o vertice de destino" << endl;
+    cin >> idDestino;
+    grafo->caminhoMinimoFloyd(idOrigem,idDestino);
   }
   else if (selecao == 7){
     //Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Prim 
     cout << "\nPara rodar o algoritmo de Prim, é preciso um subgrafo vértice induzido" << endl;
-    /*cout << "\nDigite quantos vertices tera o subgrafo vertice induzido: ";
+    cout << "\nDigite quantos vertices tera o subgrafo vertice induzido: ";
     // Vector para armazenar os ids dos vértices do subgrafo
         vector<int> idvertices;
         idvertices.clear();
@@ -78,12 +90,13 @@ void selecionar(int selecao, Grafo *grafo) {
         int num;
         cin >> num;
         for (int i = 0; i < num; i++){
+          cout << "Digite o " << i+1 << "º vertice:";
           int id;
           cin >> id;
           idvertices.push_back(id);
-        }*/
+        }
 
-    grafo->arvoreGeradoraPrim();
+    grafo->arvoreGeradoraPrim(idvertices);
   }
   else if (selecao == 8){ // Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Kruskal
     cout << "\nPara rodar o algoritmo de Kruskal, é preciso um subgrafo vértice induzido" << endl;
@@ -96,6 +109,7 @@ void selecionar(int selecao, Grafo *grafo) {
         int num;
         cin >> num;
         for (int i = 0; i < num; i++){
+          cout << "Digite o " << i+1 << "º vertice:";
           int id;
           cin >> id;
           idvertices.push_back(id);
