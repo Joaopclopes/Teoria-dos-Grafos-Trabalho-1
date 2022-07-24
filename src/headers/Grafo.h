@@ -47,7 +47,9 @@ class Grafo {
         bool getPeso_aresta();
         bool getPeso_vertice();
         int getTotalArestas();
+        int      getPosicao(int id);
         Vertice* getV(int id);
+        Vertice* getVPosicao(int p);
         Vertice* getPrimeiro();
         int getGrauVertice();
         float getGrauMedio();
@@ -65,13 +67,16 @@ class Grafo {
         void limparVisitados();
         Vertice *getVerticePosicao(int posicao);
 
+        int  Kcoeficienteagrupamento(int *IDs);
+
+
         void transitivoDireto(int id);
         void profundidade(Vertice *vertice);
         void transitivoIndireto(int id);
         void auxTransIndireto(Vertice *vertice, int id);
         void caminhamentoLargura(int id_inicio);
         void caminhamentoProfundidade(int id_inicio);
-        void caminhoMinimoDijkstra(int id_inicio);
+        void caminhoMinimoDijkstra(int id_inicio ,int id_final);
         void caminhoMinimoFloyd();
         void arvoreGeradoraPrim(Grafo *subgrafo);
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);

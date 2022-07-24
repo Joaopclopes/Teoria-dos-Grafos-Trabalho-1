@@ -71,6 +71,21 @@ int Grafo::getTotalArestas()
 {
     return this->totalArestas;
 }
+
+int Grafo::getPosicao(int id)
+{
+    Vertice *vertice = this->getPrimeiro();
+    int pos = 0;
+
+    while (vertice != nullptr)
+    {
+        if (vertice->getId() == id)
+            return pos;
+        pos++;
+        vertice = vertice->getProximoVertice();
+    }
+}
+
 Vertice* Grafo::getV(int id)
 {
     // cria ponteiro para percorrer a lista de nodes
@@ -87,6 +102,22 @@ Vertice* Grafo::getV(int id)
     // retorna o node ou null caso nao encontre
     return nullptr;
 }
+
+Vertice* Grafo::getVPosicao(int p)
+{
+
+    Vertice *vertice = this->getPrimeiro();
+    int pos = 0;
+
+    while (vertice != nullptr)
+    {
+        if (pos == p)
+            return vertice;
+        pos++;
+        vertice = vertice->getProximoVertice();
+    }
+}
+
 Vertice* Grafo::getPrimeiro()
 {
     return this->primeiro;
@@ -191,6 +222,57 @@ void Grafo::limparVisitados()
         vertice = vertice->getProximoVertice(); // Ponteiro passa a apontar para o próximo nó do grafo.
     }
 }
+
+int Grafo::Kcoeficienteagrupamento(int *IDs)
+{
+    double open = 0, closed = 0;
+    Vertice *i,*j;
+    i = getPrimeiro();
+    j = i->getProximoVertice();
+
+    while (i != NULL)
+    {
+       while (j != NULL)
+       {
+            Vertice *temp;
+            Aresta *A_temp = j->getPrimeira();
+            temp = getV(A_temp->getIdAdjacente());
+            
+            while(temp != NULL)
+            {
+                if(temp->getId() == i->getId())
+                {
+                    Vertice *k = j->getProximoVertice();
+                    while(k != NULL)
+                    {
+                        Vertice *temp;
+                        Aresta *A_temp = k->getPrimeira();
+                        temp = getV(A_temp->getIdAdjacente());
+                        while(temp != NULL)
+                        {
+                            if(temp->getId() == i->getId())
+                            {
+                                if(temp->getId() == k->getId())
+                                   closed++;
+                                else
+                                   open++;   
+                            }
+                        }
+                    }
+                }
+            }
+            j->getProximoVertice();
+       }
+       
+       i->getProximoVertice();
+    }
+
+    if(open + closed == 0)
+       return 0;
+
+    return closed / (open + closed);   
+}
+
 void Grafo::imprimeGrafo()
 {
     cout << "Imprimindo grafo: " << endl;
@@ -381,28 +463,84 @@ void Grafo::aux_busca_profundidade(Vertice *vertice)
         aresta = aresta->getProx();        
     }
 }
-//int Grafo::KCoeficienteLocal(int Idno)
 
-/*procura se o No desejado foi adicionado no vetor de visitados.*/
-//bool procuraNo(vector<int> tempCaminho,int elemento)
-/*{
-    for(int i = 0;i < tempCaminho.size();i++)
-    {
-        if(tempCaminho.at(i) == elemento)
-           return true;
-    }
-    return false;
-}
-
-vector<int> Grafo::CaminhoMinDjkstra(No *a,No *b)
+void Grafo::caminhoMinimoDijkstra(int id_inicio ,int id_final)
 {
-    vector<int> caminho;
+    Vertice *v_inicio,*v_final;
 
-    while(!procuraNo(caminho,b->GetId()))
+    v_inicio = getV(id_inicio);
+    v_final  = getV(id_final);
+
+    if(v_inicio != nullptr && v_final != nullptr)
     {
+
+        int p_inicio = getPosicao(id_inicio), p_final = getPosicao(id_final), distance = INFINITO, V = getOrdem();
+        int ver = 0, aresta = 0, u;
+
+        int *distancia  = new int[V];
+        int *antec      = new int[V];
+        bool *visitados = new bool[V];
         
+        for(int i = 0; i < V; i++)
+        {
+            distancia[i] = INFINITO;
+            visitados[i] = false;
+        }
+        distancia[p_inicio] = 0;
+
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> fila_prioridade;
+
+        fila_prioridade.push(make_pair(distancia[p_inicio], p_inicio));
+
+        pair<int, int> p = fila_prioridade.top();
+
+        Vertice *vert = nullptr;
+        Aresta  *are = nullptr;
+
+        while(!fila_prioridade.empty())
+        {
+
+            pair<int, int> p = fila_prioridade.top();
+            u = p.second;
+            fila_prioridade.pop();
+            if(visitados[u] == false)
+            {
+                visitados[u] = true;
+                vert = getVPosicao(u);
+                if(vert != nullptr)
+                    are = vert->getPrimeira();
+                else
+                    are = nullptr;
+
+                while(are != nullptr)
+                {
+                    if(!getPeso_aresta())
+                        aresta = 1;
+                    else
+                        aresta = are->getPeso();
+                    
+                    ver = getPosicao(are->getIdAdjacente());
+
+                    if(distancia[ver] > (distancia[u] + aresta))
+                    {
+                        antec[ver] = u;
+                        distancia[ver] = (distancia[u] + aresta);
+                        fila_prioridade.push(make_pair(distancia[ver], ver));
+                    }
+                    are = are->getProx();
+                }        
+            }
+        }
+
+        distance = distancia[p_final];
+
+        delete[] distancia;
+        delete[] visitados;
+
+        // if(distance < INFINITO)
+        //    sai
     }
-}*/
+}
 
 /**
  * Caminho mínimo de floyd: imprime uma matriz de
