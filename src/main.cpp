@@ -69,7 +69,7 @@ void selecionar(int selecao, Grafo *grafo) {
   else if (selecao == 7){
     //Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Prim 
     cout << "\nPara rodar o algoritmo de Prim, é preciso um subgrafo vértice induzido" << endl;
-    /*cout << "\nDigite quantos vertices tera o subgrafo vertice induzido: ";
+    cout << "\nDigite quantos vertices tera o subgrafo vertice induzido: ";
     // Vector para armazenar os ids dos vértices do subgrafo
         vector<int> idvertices;
         idvertices.clear();
@@ -81,9 +81,9 @@ void selecionar(int selecao, Grafo *grafo) {
           int id;
           cin >> id;
           idvertices.push_back(id);
-        }*/
+        }
 
-    grafo->arvoreGeradoraPrim();
+    grafo->arvoreGeradoraPrim(grafo->getVertInduz(idvertices));
   }
   else if (selecao == 8){ // Árvore Geradora Mínima sobre subgrafo vertice induzido por X usando algoritmo de Kruskal
     cout << "\nPara rodar o algoritmo de Kruskal, é preciso um subgrafo vértice induzido" << endl;

@@ -73,7 +73,7 @@ class Grafo {
         void caminhamentoProfundidade(int id_inicio);
         void caminhoMinimoDijkstra(int id_inicio);
         void caminhoMinimoFloyd();
-        void arvoreGeradoraPrim();
+        void arvoreGeradoraPrim(Grafo *subgrafo);
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);
         void arvoreCaminhamentoProfundidade(int id); //arvore destacando arestas de retorno(letra i);
         void aux_busca_profundidade(Vertice *vertice);
