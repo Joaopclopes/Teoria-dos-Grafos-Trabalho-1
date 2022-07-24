@@ -223,7 +223,7 @@ void Grafo::limparVisitados()
     }
 }
 
-int Grafo::Kcoeficienteagrupamento(int *IDs)
+int Grafo::Kcoeficienteagrupamento()
 {
     double open = 0, closed = 0;
     Vertice *i,*j;
@@ -271,6 +271,20 @@ int Grafo::Kcoeficienteagrupamento(int *IDs)
        return 0;
 
     return closed / (open + closed);   
+}
+double Grafo::KcoeficienteagrupamentoGlobal(Grafo g){
+    double somaKcoeficientes = 0;
+    Vertice *i,*j;
+    i = getPrimeiro();
+    j = i->getProximoVertice();
+    while (i != NULL){
+        while (j != NULL){
+            somaKcoeficientes += g.Kcoeficienteagrupamento();
+            j->getProximoVertice();
+        }
+        i->getProximoVertice();
+    }
+    return (somaKcoeficientes/g.getOrdem());
 }
 
 void Grafo::imprimeGrafo()
@@ -412,10 +426,6 @@ void Grafo::auxTransIndireto(Vertice *vertice, int id)
     }  
        
 }
-
-/*
-Função da busca em profundidade.
-*/
 void Grafo::busca_profundidade()
 {   
     Vertice* vertice = this->getPrimeiro();
@@ -439,10 +449,6 @@ void Grafo::busca_profundidade()
     }
     
 }
-
-/*
-Função auxiliar da busca em profundidade.
-*/
 void Grafo::aux_busca_profundidade(Vertice *vertice)
 {
     vertice->setVisitado(true);
@@ -668,117 +674,94 @@ void Grafo::caminhoMinimoFloyd()
     delete[] d; //Deleta a matriz
 }
 
-// Função para auxiliar o algoritmo de Prim. Retorna a posição do nó com menor custo de vizinhança que não esteja na agm
-int posicaoMenor(vector<int> &custoViz, vector<bool> &naAGM)
-{
-    int min = INFINITO;
-    int pos;
-    bool tem_pos = false;
-    for (int i = 0; i < custoViz.size(); i++)
-    {
-        if (custoViz[i] < min && naAGM[i] == false)
-        {
-            min = custoViz[i];
-            pos = i;
-            tem_pos = true;
-        }
-    }
-    if (tem_pos)
-        return pos;
-    else
-    {
-        for (int i = 0; i < custoViz.size(); i++)
-        {
-            if (custoViz[i] == min && naAGM[i] == false)
-            {
-                min = custoViz[i];
-                pos = i;
-                tem_pos = true;
-                return pos;
-            }
-        }
-    }
-    return pos;
-}
-
 /**
  * Árvore Geradora de Prim
  * */
-void Grafo::arvoreGeradoraPrim(Grafo *subgrafo)
+void Grafo::arvoreGeradoraPrim()
 {
-    cout << "\nIniciando a execução do algoritmo de Prim..." << endl;
+    using namespace std;
 
-    // 1º PASSO: Organizar os custos das vizinhanças dos nós em um vector
+    int tam = this->getOrdem();
 
-    // Vector para armazenar os custoViz dos nós do subgrafo. O índice no vector é compatível com a posição do nó no subgrafo
-    vector<int> custoViz;
-    custoViz.clear();
-
-    // Vector para checar se o nó já foi inserido na agm
-    vector<bool> naAGM(subgrafo->getOrdem(), false);
-
-    // O primeiro nó do vector será inicializado com custoViz = 0
-    custoViz.push_back(0);
-
-    // Os demais nós serão inicializados com custoViz = INFINITO
-    for (int i = 1; i < subgrafo->getOrdem(); i++)
-        custoViz.push_back(INFINITO);
-
-    cout << "1º passo concluído com sucesso" << endl;
-
-    // 2º PASSO: Criar Arvore Geradora Minima -> vetor com os pais de cada nó da agm ou INF caso nao tenha pai
-
-    // Os índices da agm corresponderão à posição do nó no subgrafo
-    // A raiz da agm, indice 0, será o primeiro nó do subgrafo, portanto não terá pai
-    vector<int> agm(subgrafo->getOrdem(), INFINITO);
-
-    cout << "2º passo concluído com sucesso" << endl;
-
-    // 3º PASSO: Iterar pelos vértices verificando o custoViz e inserindo na agm
-
-    int cont = 0;
-    while (cont < subgrafo->getOrdem())
+    struct No
     {
-        // Pega o nó com menor custoViz que ainda não está na agm
-        int pos_menor = posicaoMenor(custoViz, naAGM);         // Posição do nó
-        int u = subgrafo->getVerticePosicao(pos_menor)->getId(); // ID do nó
-        // Atualiza naAGM, pois, nessa iteração, u será colocado na agm
-        naAGM[pos_menor] = true;
+        Vertice *id;
+        float peso;
+    };
 
-        // Iterar pelos nós v adjacentes a u e verificar se o peso da aresta entre eles é menor que o seu custoViz
-        Aresta *aux = subgrafo->getV(u)->getPrimeira();
-        if (aux == nullptr) // nó não tem arestas
-            agm[pos_menor] = u;
-        else
+    struct ComparaMinimo
+    {
+        bool operator()(No &a, No &b)
         {
-            while (aux != nullptr)
-            {
-                int v = aux->getIdAdjacente();                      // ID de v
-                int pos_v = subgrafo->getV(v)->getPosicao(); // posição de v
-                if (!naAGM[pos_v])                               // executa caso o nó v ainda não esteja na agm
-                {
-                    // Se o peso da aresta (u, v) for menor que o custoViz de v, atualiza o custoViz com o valor do peso
-                    if (aux->getPeso() < custoViz[pos_v])
-                    {
-                        custoViz[pos_v] = aux->getPeso();
-                        // Atualiza o pai de v na agm
-                        agm[pos_v] = u;
-                    }
-                }
-                aux = aux->getProx();
-            }
+            return a.peso > b.peso;
         }
-        cont++;
+    };
+
+    priority_queue<No, vector<No>, ComparaMinimo> minheap;
+    vector<No> caminho;
+    caminho.reserve(tam);
+
+    //Setando os valores iniciais
+    No primeiro;
+    Vertice *v = this->primeiro;
+    while (v != NULL)
+    {
+        No a;
+        a.id = v;
+        a.peso = INFINITO;
+        caminho[v->getId()] = a; // vetor ordenado de cada vertice por seu id
+        v = v->getProximoVertice();
+    }
+    vector<bool> inMST(tam, false); //Se o indice i está na lista da arvore minima. Todos começam com falso
+    vector<int> pais(tam, -1);      //Armazena o id do pai do indice i;
+    caminho[0].peso = 0;
+    inMST[0] = true; // Inicializa o primeiro vertice como raiz da arvore
+    pais[0] = 0;
+    minheap.push(caminho[0]);
+
+    float pesoTotalMinimo = 0;
+
+    while (!minheap.empty()) //varre a minheap
+    {
+        No u = minheap.top(); //guarda as informações de quem estava no topo da minheap
+        minheap.pop();
+        if (inMST[u.id->getId()] == false) //Verifica se quem estava no topo ja estava na arvore
+        {
+            pesoTotalMinimo += caminho[u.id->getId()].peso;
+        }
+
+        inMST[u.id->getId()] = true; //coloca na arvore
+
+        Aresta *a = u.id->getProximaAresta();
+        while (a != NULL) //varre as arestas do vertice no topo da minheap
+        {
+            float pesoAresta = a->getPeso();
+            //cout << pesoAresta;
+            int id_adj = a->getIdAdjacente();
+
+            if (inMST[id_adj] == false && caminho[id_adj].peso > pesoAresta) //Se o vertice ainda nao estiver na arvore
+            {                                                                //E sua presente aresta custar menos que
+                caminho[id_adj].peso = pesoAresta;                           //sua aresta anterior
+                caminho[id_adj].id->setId(id_adj);                           //Atuliza como menor caminho, entra na minheap
+                minheap.push(caminho[id_adj]);                               //E atuliza seu pai
+                pais[id_adj] = u.id->getId();
+            }
+
+            a = a->getProx();
+        }
+    }
+    /* Imprime quem é o pai de cada vertice na arvore */
+    if (debug)
+    {
+        for (int i = 1; i < tam; i++)
+        {
+            cout << "[ " << pais[i] << " - " << i << " ] => ";
+        }
     }
 
-    cout << "3º passo concluído com sucesso" << endl;
-
-    // 4º PASSO: Imprimir a Árvore Geradora Mínima e seu peso
-
-    imprimirPrim(subgrafo, agm);
+    cout << endl
+         << "Peso minimo: " << pesoTotalMinimo; //peso minimo para percorrer o grafo todo
 }
-
-
 Grafo *Grafo::getVertInduz(vector<int> idvertices)
 {
     // Criar o subgrafo vértice induzido
@@ -857,49 +840,6 @@ void unirArvores(Arvore subarvores[], int u, int v)
         subarvores[subU].ordem += subarvores[subV].ordem;
     }
 }
-
-void imprimirPrim(Grafo *subgrafo, vector<int> &agm)
-{
-    //funcao para imprimir agm via Prim, com a criacao do arquivo dot para uso no graphviz
-    ofstream output_Prim;
-    output_Prim.open("output_Prim.dot", ios::out | ios::trunc);
-    output_Prim << "graph{\n";
-
-    int peso = 0;
-    cout << "\nÁRVORE GERADORA MÍNIMA via Prim\n"
-         << endl;
-    cout << "graph {" << endl;
-    for (int i = 0; i < subgrafo->getOrdem(); i++)
-    {
-        if (agm[i] != INFINITO)
-        {
-            int id_destino = subgrafo->getVerticePosicao(i)->getId();
-            if (agm[i] == id_destino){
-                cout << "  " << agm[i] << endl;
-                output_Prim <<  agm[i] << ";" << endl;
-            }
-
-            else
-            {
-                cout << "  " << agm[i] << " -- " << id_destino;
-                //cout << " Peso = " << arestas[agm[i]].first  << endl;
-                peso += subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso();
-                output_Prim << " [label = " << subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso() << "]" << endl;
-                output_Prim<<agm[i] << " -- " << id_destino;
-            }
-        }
-    }
-
-    cout << "}" << endl;
-    cout << "\nPeso da AGM: " << peso << endl;
-    cout << "\nPrim concluído com sucesso!" << endl;
-
-    output_Prim << "}";
-    output_Prim.close();
-    system("dot -Tpng output_Prim.dot -o output_Prim.png");
-
-}
-
 // Função para imprimir a AGM via Kruskal
 void imprimirKruskal(vector<pair<int, pair<int, int>>> &arestas, vector<int> &agm)
 {
