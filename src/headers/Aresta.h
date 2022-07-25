@@ -7,26 +7,28 @@
 
 class Aresta {
     private:
-    int idAdjacente;
+    int idAdjacente; //id do indice adjacente
     float peso;
     Aresta* prox;
     bool visitado;
-    int idAdjacentePosicao;
+    int idAdjacentePosicao; //posicao do indice adjacente
 
     public:
     Aresta();
     Aresta(int idAdjacente);
     Aresta(int idAdjacente, int idAdjacentePosicao,float peso);
 
+    //getters
     int getIdAdjacente();
-    void setIdAdjacente(int id);
     float getPeso();
-    void setPeso(float peso);
-    Aresta* getProx();
-    void setProxima(Aresta* prox);
-    void setVisitado(bool visitado);
     bool getVisitado();
     int getIdAdjacentePosicao();
+    Aresta* getProx();
+    //setters
+    void setProxima(Aresta* prox);
+    void setVisitado(bool visitado);
+    void setPeso(float peso);
+    void setIdAdjacente(int id);
 };
 
 #endif // ARESTA_H

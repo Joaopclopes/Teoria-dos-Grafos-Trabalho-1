@@ -27,23 +27,35 @@ class Grafo {
         int totalArestas;
         int posicao; //para guarda a posição de inserção do no
 
-        void auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<int> *retorno,vector<string> *graf);
-        void saidaFloyd(int **pred, Vertice *origem, Vertice *destino);
+        //usado em Dijkstra
         void caminhoMinimo(list<int> &antecessor);
-        int **iniciaDistanciaFloyd(int **distancia, int tam);
-        int **iniciaAnterioresFloyd(int **anteriores, int tam);
         void saidaDijkstra(int antecessor[], int idOrigem, int idDestino);
-        void printFloyd(int **path, int **cost, int idOrig, int idDest);
-        void printPathFloyd(int **path, int idOrig, int idDest);
+
+        //usado em floyd        
+        void imprimirFloyd(int **path, int **cost, int idOrig, int idDest);
+        void imprimirCaminhoFloyd(int **path, int idOrig, int idDest);
+
+        //usado em prim
         void imprimirPrim(Grafo *subgrafo, vector<int> &agm);
+
+        //funcoes auxiliares
+        void profundidade(Vertice *vertice); //caminhamento profundidade 1
+        void auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<int> *retorno,vector<string> *graf);
+        void addAresta (int id_origem, int  id_destino, float peso); //adicionar arestas
+        void apagaAresta(int id_origem, int id_destino); //apagar aresta
+        void addVertice(int id); //adicionar vertice
+        void apagaVertice(int idVertice); //apagar vertice 
+        void limparVisitados(); //colocar todos os nos como nao visitados
+        Vertice *getVerticePosicao(int posicao); //obter a posicao de determinado no
+        Grafo *getVertInduz(vector<int> idvertices); //subgrafo vertice induzido
 
     public:
         bool debug = false;
         Grafo(int ordem,bool direcionado,bool peso_aresta, bool peso_vertice);
         ~Grafo();
 
-        void leitura(ifstream &arquivo);
-        void escreverArquivo(ofstream &arquivo);
+        void leitura(ifstream &arquivo); //funcao para leitura do grafo no arquivo txt
+        void escreverArquivo(ofstream &arquivo); 
 
         //Getters
         int getOrdem();
@@ -55,39 +67,19 @@ class Grafo {
         Vertice* getV(int id);
         Vertice* getVPosicao(int p);
         Vertice* getPrimeiro();
-        int getGrauVertice();
-        float getGrauMedio();
-        float getFrequenciaRelativa(int grau);
         int getPosicao();
         void setPosicao(int posicao);
 
-        void addAresta (int id_origem, int  id_destino, float peso);
-        void apagaAresta(int id_origem, int id_destino);
+        void imprimeGrafo(); //funcao para imprimir grafo na tela
 
-        void addVertice(int id);
-        void apagaVertice(int idVertice);
-        void imprimeGrafo();
-        Grafo* verticeInduzido();
-        void limparVisitados();
-        Vertice *getVerticePosicao(int posicao);
-
-        int  Kcoeficienteagrupamento(int *IDs);
-
-
-        void transitivoDireto(int id);
-        void profundidade(Vertice *vertice);
-        void transitivoIndireto(int id);
-        void auxTransIndireto(Vertice *vertice, int id);
-        void caminhamentoLargura(int id_inicio);
-        void caminhamentoProfundidade(int id_inicio);
-        float caminhoMinimoDijkstra(int idOrigem, int idDestino);
-        void caminhoMinimoFloyd(int idOrigem, int idDestino);
-        void arvoreGeradoraPrim(vector<int> vertices);
+        void transitivoDireto(int id); //fecho transitivo direto
+        void transitivoIndireto(int id); //fecho transitivo indireto
+        int  Kcoeficienteagrupamento(int *IDs); //coeficiente de agrupamento
+        float caminhoMinimoDijkstra(int idOrigem, int idDestino); //dijkstra
+        void caminhoMinimoFloyd(int idOrigem, int idDestino); //floyd
+        void arvoreGeradoraPrim(vector<int> vertices); //prim
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);
         void arvoreCaminhamentoProfundidade(int id); //arvore destacando arestas de retorno(letra i);
-        void aux_busca_profundidade(Vertice *vertice);
-        void busca_profundidade();
-        Grafo *getVertInduz(vector<int> idvertices);
 
 };
 

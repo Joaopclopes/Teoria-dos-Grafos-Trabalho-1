@@ -13,7 +13,7 @@ class Vertice {
     int id;
     int grau;
     float peso;
-    Vertice* proxV;
+    Vertice* proxV; //proximo vertice
     Aresta* primeira;
     Aresta* ultima;
     bool visitado;

@@ -399,76 +399,9 @@ void Grafo::transitivoIndireto(int id)
         cout << "Vertice nao encontrado" << endl;
     }
 }
-void Grafo::auxTransIndireto(Vertice *vertice, int id)
-{
-    vertice->setVisitado(true);
-    Aresta *aresta = vertice->getPrimeira();
-    while(aresta!=nullptr){
-        if(aresta->getIdAdjacente()==id){
-        this->getV(aresta->getIdAdjacente())->setVisitado(true);
-        break;
-        }
-        else if(!this->getV(aresta->getIdAdjacente())->getVisitado()){
-            auxTransIndireto(this->getV(aresta->getIdAdjacente()),id);
-        }
-        aresta = aresta->getProx();
-    }  
-       
-}
-
-/*
-Função da busca em profundidade.
-*/
-void Grafo::busca_profundidade()
-{   
-    Vertice* vertice = this->getPrimeiro();
-    vector<int> arestas_retorno;
-    this->limparVisitados();
-    aux_busca_profundidade(vertice);
-    while (vertice!=nullptr){
-        if(vertice->getVisitado()){
-            cout << vertice->getId() << "  ";
-        }
-        for(Aresta *aresta = vertice->getPrimeira(); aresta!=nullptr; aresta = aresta->getProx()){
-            if (!aresta->getVisitado()){
-                arestas_retorno.push_back(aresta->getPeso());
-            }
-        }
-        vertice = vertice->getProximoVertice();
-    }
-    cout << "Arestas de retorno: " << endl;
-    for (int i = 0; i < arestas_retorno.size(); i++){
-        cout << arestas_retorno[i] << " ";
-    }
-    
-}
-
-/*
-Função auxiliar da busca em profundidade.
-*/
-void Grafo::aux_busca_profundidade(Vertice *vertice)
-{
-    vertice->setVisitado(true);
-    Aresta *aresta = vertice->getPrimeira();
-    while (aresta != nullptr)
-    {
-        if(!(this->getV(aresta->getIdAdjacente())->getVisitado()))
-        {
-            if(!this->getDirecionado()){
-                aresta->setVisitado(true);
-                this->getV(aresta->getIdAdjacente())->getAresta(vertice->getId())->setVisitado(true);
-            }
-            else{
-                aresta->setVisitado(true);
-            }
-            aux_busca_profundidade(this->getV(aresta->getIdAdjacente()));
-        }
-        aresta = aresta->getProx();        
-    }
-}
-
 float Grafo::caminhoMinimoDijkstra(int idOrigem, int idDestino)
 {
+    this->limparVisitados();
     Vertice *origem, *destino;
     int distancia;    
 
@@ -653,7 +586,6 @@ void Grafo::imprimirPrim(Grafo *subgrafo, vector<int> &agm)
     int peso = 0;
     cout << "\nÁRVORE GERADORA MÍNIMA via Prim\n"
          << endl;
-    cout << "graph {" << endl;
     for (int i = 0; i < subgrafo->getOrdem(); i++)
     {
         if (agm[i] != INFINITO)
@@ -675,7 +607,6 @@ void Grafo::imprimirPrim(Grafo *subgrafo, vector<int> &agm)
         }
     }
 
-    cout << "}" << endl;
     cout << "\nPeso da AGM: " << peso << endl;
     cout << "\nPrim concluído com sucesso!" << endl;
 
@@ -862,10 +793,10 @@ void Grafo::arvoreCaminhamentoProfundidade(int id)
         //GERANDO ARQUIVO DOT PARA USO NO GRAPHVIZ
         ofstream output_profundidade;
         output_profundidade.open("output_profundidade.dot", ios::out | ios::trunc);
-        output_profundidade << "grafo{\n";
+        output_profundidade << "graph{\n";
         for (int i = 0; i < grafo.size(); i++)
         {
-            output_profundidade << grafo.at(i) << endl;
+            output_profundidade << grafo.at(i) << ";" << endl;
         }
         output_profundidade << "}";
         output_profundidade.close();
@@ -885,7 +816,7 @@ void Grafo::auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<i
     {
         if (!getV(aresta->getIdAdjacente())->getVisitado())
         {
-            graf->push_back(to_string(v->getId()) + "--" + to_string(aresta->getIdAdjacente()));
+            graf->push_back(to_string(v->getId()) + " -- " + to_string(aresta->getIdAdjacente()));
             auxCaminhamentoProfundidade(getV(aresta->getIdAdjacente()), findG, retorno,graf);
         }
     }
@@ -1019,6 +950,7 @@ void Grafo::caminhoMinimo(list<int> &antecessor)
 }
 void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
 { //
+    this->limparVisitados();
     // cost[] e matrizAdjac[] armazenam o menor caminho
     int **cost, **path;
     int **matrizAdjac;
@@ -1099,7 +1031,7 @@ void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
     }
 
     //Resultado em tela
-    printFloyd(path, cost, idOrig, idDest);
+    imprimirFloyd(path, cost, idOrig, idDest);
 
     for (int i = 0; i < this->getOrdem(); i++)
     {
@@ -1110,31 +1042,28 @@ void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
     delete[] path;
     delete[] cost;
     delete[] matrizAdjac;
-    cout << "-------------------------------------------------------------------" << endl;
-
+    
     getchar();
     getchar();
 }
 
 //Função para imprimir em tela o resultado
 
-void Grafo::printFloyd(int **path, int **cost, int idOrig, int idDest)
+void Grafo::imprimirFloyd(int **path, int **cost, int idOrig, int idDest)
 {
-    cout << "-------------------------------FLOYD-------------------------------" << endl;
-    cout << "[caminho minimo entre os nos " << idOrig << " e " << idDest << " ]" << " - custo do caminho minimo" << endl;
-    cout << "-------------------------------------------------------------------" << endl;
+    cout << "Caminho minimo entre " << idOrig << " e " << idDest << " usando Floyd " << endl;
 
     if(cost[idOrig][idDest]==INFINITO){
-        cout<< "[ "<<idOrig << ", "<< idDest<<"]"<< " - " <<"Nao existe caminho"<<endl;
+        cout << idOrig << ", "<< idDest<<"]"<< " - " <<" Nao existe caminho" <<endl;
     }
     else if(idOrig == idDest)
     {
-        cout<< "[ " << idOrig << ", "<<idDest<< "] "<< " - "<< "0"<< endl;
+        cout << idOrig << ", "<<idDest << " - "<< "0"<< endl;
     }
     else{
-        cout << "[" << idOrig << ", ";
-        printPathFloyd(path, idOrig, idDest);
-        cout << idDest << "] - ";
+        cout <<  idOrig << ", ";
+        imprimirCaminhoFloyd(path, idOrig, idDest);
+        cout << idDest << " - ";
         cout<< cost[idOrig][idDest] << endl;
     }
 }
@@ -1142,12 +1071,12 @@ void Grafo::printFloyd(int **path, int **cost, int idOrig, int idDest)
 
 //Auxiliar para imprimir caminho minimo no algoritimo de Floyd
 
-void Grafo::printPathFloyd(int **path, int idOrig, int idDest)
+void Grafo::imprimirCaminhoFloyd(int **path, int idOrig, int idDest)
 {
         if (path[idOrig][idDest] == idOrig)
         return;
 
-        printPathFloyd(path, idOrig, path[idOrig][idDest]);
+        imprimirCaminhoFloyd(path, idOrig, path[idOrig][idDest]);
         cout << path[idOrig][idDest] << ", ";
 
 }
