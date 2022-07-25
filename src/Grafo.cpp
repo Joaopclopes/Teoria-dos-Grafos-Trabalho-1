@@ -16,8 +16,7 @@
 
 using namespace std;
 
-#define INFINITO std::numeric_limits<float>::max()
-#define INF std::numeric_limits<int>::max()
+#define INFINITO std::numeric_limits<int>::max()
 
 
 //Construtor
@@ -73,6 +72,22 @@ int Grafo::getTotalArestas()
 {
     return this->totalArestas;
 }
+
+int Grafo::getPosicao(int id)
+{
+    Vertice *vertice = this->getPrimeiro();
+    int pos = 0;
+
+    while (vertice != nullptr)
+    {
+        if (vertice->getId() == id)
+            return pos;
+        pos++;
+        vertice = vertice->getProximoVertice();
+    }
+    return 0;
+}
+
 Vertice* Grafo::getV(int id)
 {
     // cria ponteiro para percorrer a lista de nodes
@@ -89,6 +104,23 @@ Vertice* Grafo::getV(int id)
     // retorna o node ou null caso nao encontre
     return nullptr;
 }
+
+Vertice* Grafo::getVPosicao(int p)
+{
+
+    Vertice *vertice = this->getPrimeiro();
+    int pos = 0;
+
+    while (vertice != nullptr)
+    {
+        if (pos == p)
+            return vertice;
+        pos++;
+        vertice = vertice->getProximoVertice();
+    }
+    return nullptr;
+}
+
 Vertice* Grafo::getPrimeiro()
 {
     return this->primeiro;
@@ -193,6 +225,57 @@ void Grafo::limparVisitados()
         vertice = vertice->getProximoVertice(); // Ponteiro passa a apontar para o próximo nó do grafo.
     }
 }
+
+int Grafo::Kcoeficienteagrupamento(int *IDs)
+{
+    double open = 0, closed = 0;
+    Vertice *i,*j;
+    i = getPrimeiro();
+    j = i->getProximoVertice();
+
+    while (i != NULL)
+    {
+       while (j != NULL)
+       {
+            Vertice *temp;
+            Aresta *A_temp = j->getPrimeira();
+            temp = getV(A_temp->getIdAdjacente());
+            
+            while(temp != NULL)
+            {
+                if(temp->getId() == i->getId())
+                {
+                    Vertice *k = j->getProximoVertice();
+                    while(k != NULL)
+                    {
+                        Vertice *temp;
+                        Aresta *A_temp = k->getPrimeira();
+                        temp = getV(A_temp->getIdAdjacente());
+                        while(temp != NULL)
+                        {
+                            if(temp->getId() == i->getId())
+                            {
+                                if(temp->getId() == k->getId())
+                                   closed++;
+                                else
+                                   open++;   
+                            }
+                        }
+                    }
+                }
+            }
+            j->getProximoVertice();
+       }
+       
+       i->getProximoVertice();
+    }
+
+    if(open + closed == 0)
+       return 0;
+
+    return closed / (open + closed);   
+}
+
 void Grafo::imprimeGrafo()
 {
     cout << "Imprimindo grafo: " << endl;
@@ -332,6 +415,10 @@ void Grafo::auxTransIndireto(Vertice *vertice, int id)
     }  
        
 }
+
+/*
+Função da busca em profundidade.
+*/
 void Grafo::busca_profundidade()
 {   
     Vertice* vertice = this->getPrimeiro();
@@ -355,6 +442,10 @@ void Grafo::busca_profundidade()
     }
     
 }
+
+/*
+Função auxiliar da busca em profundidade.
+*/
 void Grafo::aux_busca_profundidade(Vertice *vertice)
 {
     vertice->setVisitado(true);
@@ -375,242 +466,104 @@ void Grafo::aux_busca_profundidade(Vertice *vertice)
         aresta = aresta->getProx();        
     }
 }
-//int Grafo::KCoeficienteLocal(int Idno)
 
-/*procura se o No desejado foi adicionado no vetor de visitados.*/
-//bool procuraNo(vector<int> tempCaminho,int elemento)
-/*{
-    for(int i = 0;i < tempCaminho.size();i++)
-    {
-        if(tempCaminho.at(i) == elemento)
-           return true;
-    }
-    return false;
-}
-
-vector<int> Grafo::CaminhoMinDjkstra(No *a,No *b)
+float Grafo::caminhoMinimoDijkstra(int idOrigem, int idDestino)
 {
-    vector<int> caminho;
+    Vertice *origem, *destino;
+    int distancia;    
 
-    while(!procuraNo(caminho,b->GetId()))
+    if (idOrigem == idDestino)
     {
-        
-    }
-}*/
+        cout << "\n\nA distância é: " << 0 << endl;
+        return 0;
+    } //Encerá caso seja o mesmo no
 
-/**
- * Caminho mínimo de floyd: imprime uma matriz de
- * pesos, onde cada item da matriz m[i][j] representa o
- * peso do nó i ao nó j.
- * */
-/*void Grafo::caminhoMinimoFloyd()
-{
-    // Estrutura Caminho para armazenar os pesos das arestas e o primeiro vetor do caminho
-    struct Caminho
+    origem = getV(idOrigem); //Busca o no
+    destino = getV(idDestino); //Busca o no
+
+    if (origem != nullptr && destino != nullptr)
     {
-        Vertice *primeiro;
-        float peso;
-    };
 
-    int tam = this->getOrdem();
+        int pSource = origem->getPosicao(), pTarget = destino->getPosicao(), distancia = INFINITO, V = getOrdem();
+        int ver = 0, c_edge = 0, u;
 
-    //Alocação dinamica da matriz
-    Caminho **d;
-    d = new Caminho *[tam];
-
-    for (int i = 0; i < tam; i++)
-    {
-        d[i] = new Caminho[tam];
-    }
-
-    //inicializando a matriz com peso 0 para a diagonal e infinito para o resto
-    //Cria em cada elemento da matriz uma lista que servirá para guardar o caminho
-    for (int i = 0; i < tam; i++)
-    {
-        for (int j = 0; j < tam; j++)
+        int *distance = new int[V];  //Vetor para os distâncias entre a posição do noSorce e os demais
+        int *antec = new int[V];     //Vetor para os antecessores
+        bool *visited = new bool[V]; //Vetor para as posições já visitadas
+        for (int i = 0; i < V; i++)
         {
-            if (i == j)
-            {
-                d[i][j].peso = 0;
-            }
-            else
-            {
-                d[i][j].peso = INFINITO;
-            }
+            distance[i] = INFINITO;
+            visited[i] = false;
+        }                      //Inicializador dos vetores visitados e distância
+        distance[pSource] = 0; //Distância do vertice para ele mesmo
 
-            d[i][j].primeiro = new Vertice(i);
-        }
-    }
+        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> fp; //Fila de prioridade para os pares distancia e vertice
 
-    //Setando os valores iniciais dado grafo a partir dos vertices vizinhos
-    Vertice *v = this->primeiro;
-    while (v != NULL)
-    {
-        Aresta *a = v->getProximaAresta();
-        while (a != NULL)
+        fp.push(make_pair(distance[pSource], pSource)); //Adiciona o par vetor distância e
+
+        pair<int, int> p = fp.top(); //Adiciona o p na fila de prioridade
+
+        Vertice *vertice = nullptr;
+        Aresta *aresta = nullptr;
+
+        while (!fp.empty())
         {
-            d[v->getId()][a->getIdAdjacente()].peso = a->getPeso();
-            d[v->getId()][a->getIdAdjacente()].primeiro->setId(v->getId());
-            a = a->getProx();
-        }
-        v = v->getProximoVertice();
-    }
 
-    //Metodo de Floyd para encontrar o menor caminho partindo de cada ponto diferente
-    for (int k = 0; k < tam; k++)
-    {
-        for (int i = 0; i < tam; i++)
-        {
-            for (int j = 0; j < tam; j++)
+            pair<int, int> p = fp.top(); //Pega o do topo
+            u = p.second;                //Obtem o vértice
+            fp.pop();                    //Remove da lista de prioridade
+            if (visited[u] == false)
             {
-                float pesoExistente = d[i][j].peso;            //Pega o menor caminho entre dois vertices(i,j)
-                float pesoTeste = d[i][k].peso + d[k][j].peso; //Soma o caminho de ir de i à j passando por k
-                if (pesoTeste < pesoExistente)                 //Se passando por k for menor entra no if e atualiza o peso na matriz
-                {
-                    d[i][j].peso = pesoTeste;
-                    Vertice *c = new Vertice(k);
-                    Vertice *aux = d[i][j].primeiro;
-                    while (aux->getProximoVertice() != NULL) //atualiza a matriz de caminhos
-                    {
-                        aux = aux->getProximoVertice();
+                visited[u] = true; //Marca o vertice como visitado
+                vertice = getVerticePosicao(u);
+                if (vertice != nullptr) //Busca o no pela posição
+                    aresta = vertice->getPrimeira();
+                else
+                    aresta = nullptr; //Pega a primeira aresta do no
+
+                while (aresta != nullptr)
+                { //Passa por todas as arestas do vertice u
+
+                    if (!getPeso_aresta())
+                        c_edge = 1; //Para caso não haja pesso a distância será 1 por salto
+                    else
+                        c_edge = aresta->getPeso();
+
+                    ver = aresta->getIdAdjacentePosicao(); //Pega a posição do no Target dessa aresta
+
+                    if (distance[ver] > (distance[u] + c_edge))
+                    {                                           //Verifica se a distância é menor
+                        antec[ver] = u;                         //Atualiza o antecessor
+                        distance[ver] = (distance[u] + c_edge); //Atualiza a distância
+                        fp.push(make_pair(distance[ver], ver)); //Adiciona o vertice na fila de prioridade
                     }
-                    aux->setProximoVertice(c);
+                    aresta = aresta->getProx(); //Avança para o a proxima aresta do vertice
                 }
             }
         }
+
+        distancia = distance[pTarget];
+
+        delete[] distance; //Desalocando o vetore usado
+        delete[] visited;  //Desalocando o vetore usado
+
+        if (distancia < INFINITO)
+            saidaDijkstra(antec, pSource, pTarget); //Imprime todo a lista na ordem de acesso
+
+        delete[] antec;
+        cout << "\n\nA distância é: " << distancia << endl;
+        return distancia;
     }
-
-    //Coloca o vertice de chegada como o ultimo vertice da lista de caminhos
-    for (int i = 0; i < tam; i++)
+    else
     {
-        for (int j = 0; j < tam; j++)
-        {
-            Vertice *c = new Vertice(j);
-            Vertice *aux = d[i][j].primeiro;
-            while (aux->getProximoVertice() != NULL)
-            {
-                aux = aux->getProximoVertice();
-            }
-            aux->setProximoVertice(c);
-        }
+
+        if (origem == nullptr)
+            cout << "Source node não existe nesse grafo" << endl;
+        if (destino == nullptr)
+            cout << "Target node não existe nesse grafo" << endl;
+        return -1;
     }
-
-    //Imprime uma matriz com o peso para ir de um vertice [i] para outro [j]
-    std::cout << std::endl;
-    std::cout << "-----Matriz de Pesos------" << std::endl;
-    for (int i = 0; i < tam; i++)
-    {
-        for (int j = 0; j < tam; j++)
-        {
-            std::cout << d[i][j].peso << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    // Desalocando memória
-    for (int i = 0; i < tam; i++)
-    {
-        for (int j = 0; j < tam; j++)
-        {
-            while (d[i][j].primeiro != NULL)
-            {
-                Vertice *aux = d[i][j].primeiro;
-                d[i][j].primeiro = d[i][j].primeiro->getProximoVertice();
-                delete aux; //Deleta cada vertice da lista
-            }
-        }
-        delete[] d[i]; //Deleta cada linha da matriz
-    }
-    delete[] d; //Deleta a matriz
-}*/
-
-/**
- * Árvore Geradora de Prim
- * */
-/*void Grafo::arvoreGeradoraPrim(vector<int> vertices)
-{
-    Grafo *subgrafo = this->getVertInduz(vertices);
-    int tam = this->getOrdem();
-
-    struct No
-    {
-        Vertice *id;
-        float peso;
-    };
-
-    struct ComparaMinimo
-    {
-        bool operator()(No &a, No &b)
-        {
-            return a.peso > b.peso;
-        }
-    };
-
-    priority_queue<No, vector<No>, ComparaMinimo> minheap;
-    vector<No> caminho;
-    caminho.reserve(tam);
-
-    //Setando os valores iniciais
-    No primeiro;
-    Vertice *v = subgrafo->getPrimeiro();
-    while (v != NULL)
-    {
-        No a;
-        a.id = v;
-        a.peso = INFINITO;
-        caminho[v->getId()] = a; // vetor ordenado de cada vertice por seu id
-        v = v->getProximoVertice();
-    }
-    vector<bool> inMST(tam, false); //Se o indice i está na lista da arvore minima. Todos começam com falso
-    vector<int> pais(tam, -1);      //Armazena o id do pai do indice i;
-    caminho[0].peso = 0;
-    inMST[0] = true; // Inicializa o primeiro vertice como raiz da arvore
-    pais[0] = 0;
-    minheap.push(caminho[0]);
-
-    float pesoTotalMinimo = 0;
-
-    while (!minheap.empty()) //varre a minheap
-    {
-        No u = minheap.top(); //guarda as informações de quem estava no topo da minheap
-        minheap.pop();
-        if (inMST[u.id->getId()] == false) //Verifica se quem estava no topo ja estava na arvore
-        {
-            pesoTotalMinimo += caminho[u.id->getId()].peso;
-        }
-
-        inMST[u.id->getId()] = true; //coloca na arvore
-
-        Aresta *a = u.id->getProximaAresta();
-        while (a != NULL) //varre as arestas do vertice no topo da minheap
-        {
-            float pesoAresta = a->getPeso();
-            //cout << pesoAresta;
-            int id_adj = a->getIdAdjacente();
-
-            if (inMST[id_adj] == false && caminho[id_adj].peso > pesoAresta) //Se o vertice ainda nao estiver na arvore
-            {                                                                //E sua presente aresta custar menos que
-                caminho[id_adj].peso = pesoAresta;                           //sua aresta anterior
-                caminho[id_adj].id->setId(id_adj);                           //Atuliza como menor caminho, entra na minheap
-                minheap.push(caminho[id_adj]);                               //E atuliza seu pai
-                pais[id_adj] = u.id->getId();
-            }
-
-            a = a->getProx();
-        }
-    }*/
-    /* Imprime quem é o pai de cada vertice na arvore */
-    /*if (debug)
-    {
-        for (int i = 1; i < tam; i++)
-        {
-            cout << "[ " << pais[i] << " - " << i << " ] => ";
-        }
-    }
-
-    cout << endl
-         << "Peso minimo: " << pesoTotalMinimo; //peso minimo para percorrer o grafo todo
-} */
+}
 Grafo *Grafo::getVertInduz(vector<int> idvertices)
 {
     // Criar o subgrafo vértice induzido
@@ -689,6 +642,49 @@ void unirArvores(Arvore subarvores[], int u, int v)
         subarvores[subU].ordem += subarvores[subV].ordem;
     }
 }
+
+void Grafo::imprimirPrim(Grafo *subgrafo, vector<int> &agm)
+{
+    //funcao para imprimir agm via Prim, com a criacao do arquivo dot para uso no graphviz
+    ofstream output_Prim;
+    output_Prim.open("output_Prim.dot", ios::out | ios::trunc);
+    output_Prim << "graph{\n";
+
+    int peso = 0;
+    cout << "\nÁRVORE GERADORA MÍNIMA via Prim\n"
+         << endl;
+    cout << "graph {" << endl;
+    for (int i = 0; i < subgrafo->getOrdem(); i++)
+    {
+        if (agm[i] != INFINITO)
+        {
+            int id_destino = subgrafo->getVerticePosicao(i)->getId();
+            if (agm[i] == id_destino){
+                cout << "  " << agm[i] << endl;
+                output_Prim <<  agm[i] << ";" << endl;
+            }
+
+            else
+            {
+                cout << "  " << agm[i] << " -- " << id_destino;
+                //cout << " Peso = " << arestas[agm[i]].first  << endl;
+                peso += subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso();
+                output_Prim << " [label = " << subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso() << "]" << endl;
+                output_Prim<<agm[i] << " -- " << id_destino;
+            }
+        }
+    }
+
+    cout << "}" << endl;
+    cout << "\nPeso da AGM: " << peso << endl;
+    cout << "\nPrim concluído com sucesso!" << endl;
+
+    output_Prim << "}";
+    output_Prim.close();
+    system("dot -Tpng output_Prim.dot -o output_Prim.png");
+
+}
+
 // Função para imprimir a AGM via Kruskal
 void imprimirKruskal(vector<pair<int, pair<int, int>>> &arestas, vector<int> &agm)
 {
@@ -751,7 +747,7 @@ void Grafo::arvoreGeradoraKruskal(vector<int> vertices)
     for (int i = 1; i < subgrafo->getOrdem(); i++)
     {
         if (arestaAux == nullptr)
-            arestas.push_back({INF, {u, u}});
+            arestas.push_back({INFINITO, {u, u}});
 
         while (arestaAux != nullptr)
         {
@@ -895,48 +891,10 @@ void Grafo::auxCaminhamentoProfundidade(Vertice *v, vector<int> *findG, vector<i
     }
     retorno->push_back(v->getId()); 
 }
-// Função para imprimir a AGM via Prim
-void imprimirPrim(Grafo *subgrafo, vector<int> &agm)
-{
-    ofstream output_Prim;
-    output_Prim.open("output_Prim.dot", ios::out | ios::trunc);
-    output_Prim << "graph{\n";
-
-    int peso = 0;
-    cout << "\nÁRVORE GERADORA MÍNIMA via Prim\n"
-         << endl;
-    cout << "graph {" << endl;
-    for (int i = 0; i < subgrafo->getOrdem(); i++)
-    {
-        if (agm[i] != INF)
-        {
-            int id_destino = subgrafo->getVerticePosicao(i)->getId();
-            if (agm[i] == id_destino){
-                cout << "  " << agm[i] << endl;
-                output_Prim << agm[i] << ";" << endl;
-            }
-            else
-            {
-                cout << "  " << agm[i] << " -- " << id_destino;
-                cout << " Peso = " << subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso() << endl;
-                peso += subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso();
-                output_Prim << agm[i] << " -- " << id_destino;
-                output_Prim << "[label = " << subgrafo->getV(agm[i])->getAresta(id_destino)->getPeso()<< "];" << endl;
-            }
-        }
-    }
-    cout << "}" << endl;
-    cout << "\nPeso da AGM: " << peso << endl;
-    cout << "\nPrim concluído com sucesso!" << endl;
-
-    output_Prim << "}";
-    output_Prim.close();
-    system("dot -Tpng output_Prim.dot -o output_Prim.png");      
-}
 // Função para auxiliar o algoritmo de Prim. Retorna a posição do nó com menor custo de vizinhança que não esteja na agm
 int posicaoMenor(vector<int> &custoViz, vector<bool> &naAGM)
 {
-    int min = INF;
+    int min = INFINITO;
     int pos;
     bool tem_pos = false;
     for (int i = 0; i < custoViz.size(); i++)
@@ -984,13 +942,13 @@ void Grafo::arvoreGeradoraPrim(vector<int> vertices)
 
     // Os demais nós serão inicializados com custoViz = INFINITO
     for (int i = 1; i < subgrafo->getOrdem(); i++)
-        custo.push_back(INF);
+        custo.push_back(INFINITO);
 
     // 2º PASSO: Criar Arvore Geradora Minima -> vetor com os pais de cada nó da agm ou INF caso nao tenha pai
 
     // Os índices da agm corresponderão à posição do nó no subgrafo
     // A raiz da agm, indice 0, será o primeiro nó do subgrafo, portanto não terá pai
-    vector<int> agm(subgrafo->getOrdem(), INF);
+    vector<int> agm(subgrafo->getOrdem(), INFINITO);
 
     // 3º PASSO: Iterar pelos vértices verificando o custoViz e inserindo na agm
 
@@ -1076,7 +1034,7 @@ void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
         matrizAdjac[i] = new int[this->getOrdem()];
         for (int j = 0; j < this->getOrdem(); j++)
         {
-            matrizAdjac[i][j] = INF;
+            matrizAdjac[i][j] = INFINITO;
             if (i == j)
             {
                 matrizAdjac[i][j] = 0;
@@ -1108,7 +1066,7 @@ void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
             cost[v][u] = matrizAdjac[v][u];
             if (v == u)
                 path[v][u] = 0;
-            else if (cost[v][u] != INF)
+            else if (cost[v][u] != INFINITO)
                 path[v][u] = v;
             else
                 path[v][u] = -1;
@@ -1124,7 +1082,7 @@ void Grafo::caminhoMinimoFloyd(int idOrig, int idDest)
             for (int u = 0; u < this->getOrdem(); u++)
             {
                 // caso o vertice k esteja no menor path de v para u, então o valor da posição cost[v][u] é atualizado
-                if (cost[v][k] != INF && cost[k][u] != INF && cost[v][k] + cost[k][u] < cost[v][u])
+                if (cost[v][k] != INFINITO && cost[k][u] != INFINITO && cost[v][k] + cost[k][u] < cost[v][u])
                 {
                     cost[v][u] = cost[v][k] + cost[k][u];
                     path[v][u] = path[k][u];
@@ -1166,7 +1124,7 @@ void Grafo::printFloyd(int **path, int **cost, int idOrig, int idDest)
     cout << "[caminho minimo entre os nos " << idOrig << " e " << idDest << " ]" << " - custo do caminho minimo" << endl;
     cout << "-------------------------------------------------------------------" << endl;
 
-    if(cost[idOrig][idDest]==INF){
+    if(cost[idOrig][idDest]==INFINITO){
         cout<< "[ "<<idOrig << ", "<< idDest<<"]"<< " - " <<"Nao existe caminho"<<endl;
     }
     else if(idOrig == idDest)
@@ -1213,101 +1171,4 @@ void Grafo::saidaDijkstra(int antecessor[], int idOrigem, int idDestino)
     primeiro = ordemAcesso.front();
 
     caminhoMinimo(ordemAcesso);
-}
-float Grafo::caminhoMinimoDijkstra(int idOrigem, int idDestino)
-{
-    Vertice *origem, *destino;
-    int distancia;
-
-    if (idOrigem == idDestino)
-    {
-        cout << "\n\nA distância é: " << 0 << endl;
-        return 0;
-    } //Encerá caso seja o mesmo no
-
-    origem = getV(idOrigem); //Busca o no
-    destino = getV(idDestino); //Busca o no
-
-    if (origem != nullptr && destino != nullptr)
-    {
-
-        int pSource = origem->getPosicao(), pTarget = destino->getPosicao(), distancia = INF, V = getOrdem();
-        int ver = 0, c_edge = 0, u;
-
-        int *distance = new int[V];  //Vetor para os distâncias entre a posição do noSorce e os demais
-        int *antec = new int[V];     //Vetor para os antecessores
-        bool *visited = new bool[V]; //Vetor para as posições já visitadas
-        for (int i = 0; i < V; i++)
-        {
-            distance[i] = INF;
-            visited[i] = false;
-        }                      //Inicializador dos vetores visitados e distância
-        distance[pSource] = 0; //Distância do vertice para ele mesmo
-
-        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> fp; //Fila de prioridade para os pares distancia e vertice
-
-        fp.push(make_pair(distance[pSource], pSource)); //Adiciona o par vetor distância e
-
-        pair<int, int> p = fp.top(); //Adiciona o p na fila de prioridade
-
-        Vertice *vertice = nullptr;
-        Aresta *aresta = nullptr;
-
-        while (!fp.empty())
-        {
-
-            pair<int, int> p = fp.top(); //Pega o do topo
-            u = p.second;                //Obtem o vértice
-            fp.pop();                    //Remove da lista de prioridade
-            if (visited[u] == false)
-            {
-                visited[u] = true; //Marca o vertice como visitado
-                vertice = getVerticePosicao(u);
-                if (vertice != nullptr) //Busca o no pela posição
-                    aresta = vertice->getPrimeira();
-                else
-                    aresta = nullptr; //Pega a primeira aresta do no
-
-                while (aresta != nullptr)
-                { //Passa por todas as arestas do vertice u
-
-                    if (!getPeso_aresta())
-                        c_edge = 1; //Para caso não haja pesso a distância será 1 por salto
-                    else
-                        c_edge = aresta->getPeso();
-
-                    ver = aresta->getIdAdjacentePosicao(); //Pega a posição do no Target dessa aresta
-
-                    if (distance[ver] > (distance[u] + c_edge))
-                    {                                           //Verifica se a distância é menor
-                        antec[ver] = u;                         //Atualiza o antecessor
-                        distance[ver] = (distance[u] + c_edge); //Atualiza a distância
-                        fp.push(make_pair(distance[ver], ver)); //Adiciona o vertice na fila de prioridade
-                    }
-                    aresta = aresta->getProx(); //Avança para o a proxima aresta do vertice
-                }
-            }
-        }
-
-        distancia = distance[pTarget];
-
-        delete[] distance; //Desalocando o vetore usado
-        delete[] visited;  //Desalocando o vetore usado
-
-        if (distancia < INF)
-            saidaDijkstra(antec, pSource, pTarget); //Imprime todo a lista na ordem de acesso
-
-        delete[] antec;
-        cout << "\n\nA distância é: " << distancia << endl;
-        return distancia;
-    }
-    else
-    {
-
-        if (origem == nullptr)
-            cout << "Source node não existe nesse grafo" << endl;
-        if (destino == nullptr)
-            cout << "Target node não existe nesse grafo" << endl;
-        return -1;
-    }
 }

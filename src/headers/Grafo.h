@@ -35,6 +35,7 @@ class Grafo {
         void saidaDijkstra(int antecessor[], int idOrigem, int idDestino);
         void printFloyd(int **path, int **cost, int idOrig, int idDest);
         void printPathFloyd(int **path, int idOrig, int idDest);
+        void imprimirPrim(Grafo *subgrafo, vector<int> &agm);
 
     public:
         bool debug = false;
@@ -50,7 +51,9 @@ class Grafo {
         bool getPeso_aresta();
         bool getPeso_vertice();
         int getTotalArestas();
+        int      getPosicao(int id);
         Vertice* getV(int id);
+        Vertice* getVPosicao(int p);
         Vertice* getPrimeiro();
         int getGrauVertice();
         float getGrauMedio();
@@ -67,6 +70,9 @@ class Grafo {
         Grafo* verticeInduzido();
         void limparVisitados();
         Vertice *getVerticePosicao(int posicao);
+
+        int  Kcoeficienteagrupamento(int *IDs);
+
 
         void transitivoDireto(int id);
         void profundidade(Vertice *vertice);
