@@ -47,7 +47,8 @@ class Grafo {
         void apagaVertice(int idVertice); //apagar vertice 
         void limparVisitados(); //colocar todos os nos como nao visitados
         Vertice *getVerticePosicao(int posicao); //obter a posicao de determinado no
-        Grafo *getVertInduz(vector<int> idvertices); //subgrafo vertice induzido
+        Grafo *getVertInduz(vector<int> idvertices); //subgrafo vertice induzido;
+        int aparecerNaLista(int id, int id_encontrar); //usado para achar o coeficiente de agrupamento;
 
     public:
         bool debug = false;
@@ -80,6 +81,8 @@ class Grafo {
         void arvoreGeradoraPrim(vector<int> vertices); //prim
         void arvoreGeradoraKruskal(vector<int> vertices); //arvore geradora minima por Kruskal (letra h);
         void arvoreCaminhamentoProfundidade(int id); //arvore destacando arestas de retorno(letra i);
+        float coeficienteMedio(); //coeficiente de agrupamento medio do grafo;
+        float coeficienteLocal(int id); //coeficiente de agrupamento local do vertice id;
 
 };
 

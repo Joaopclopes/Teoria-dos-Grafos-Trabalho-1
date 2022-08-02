@@ -171,6 +171,7 @@ void Grafo::addAresta(int id_origem, int  id_destino, float peso)
         {
             // caso o node exista mas a aresta nao, insere a aresta
             vertice->inserirAresta(id_destino, aux->getPosicao(),peso);
+            aux->incrementaGrauEntrada();
 
             this->totalArestas++;
 
@@ -1100,4 +1101,70 @@ void Grafo::saidaDijkstra(int antecessor[], int idOrigem, int idDestino)
     primeiro = ordemAcesso.front();
 
     caminhoMinimo(ordemAcesso);
+}
+//quantas vezes um nó aparece na lista de outro nó
+int Grafo::aparecerNaLista(int id, int id_encontrar) {
+    Vertice *vertice = this->getV(id);
+    Aresta *aresta = nullptr;
+    int valor = 0; //quantas vezes um nó aparece na lista de outro nó
+
+    if (vertice != nullptr) {
+        aresta = vertice->getPrimeira();
+        while (aresta != nullptr) {
+            if (aresta->getIdAdjacente() == id_encontrar)
+                valor++;
+            aresta = aresta->getProx();
+        }
+    }
+    return valor;
+}
+float Grafo::coeficienteLocal(int id) {
+    Vertice *vertice = this->getV(id);
+    Vertice *aux = nullptr;
+    Aresta *aresta = nullptr;
+    Aresta *auxiliar = nullptr;
+    float coeficiente = 0; //coeficiente local
+    float grauEntradaVertice = 0; //grau de entrada do vertice id
+    float P = 0;
+
+    if(vertice != nullptr) {
+        grauEntradaVertice = vertice->getGrauEntrada();
+        aresta = vertice->getPrimeira();
+        float idAresta;
+        while(aresta != nullptr) {
+            idAresta = aresta->getIdAdjacente();
+            aux = this->getV(idAresta);
+            // Acessa a lista de adj da lista de adj de vertide id
+            if (aux != nullptr) {
+                auxiliar = aux->getPrimeira();
+                while(auxiliar != nullptr) {
+                    P += this->aparecerNaLista(auxiliar->getIdAdjacente(), id);
+                    auxiliar = auxiliar->getProx();
+                }
+            }
+            aresta = aresta->getProx();
+        }
+    }
+    if(grauEntradaVertice != 1) {
+        grauEntradaVertice=(grauEntradaVertice*(grauEntradaVertice-1))/2;
+    }
+    coeficiente = float(P/grauEntradaVertice);
+    // cout << P << "/" << dv << endl;
+    return coeficiente;
+}
+float Grafo::coeficienteMedio() {
+    Vertice *vertice = this->getPrimeiro();
+    float coeficiente = 0; //coeficiente de agrupamento
+    int id;
+    float resultado; //coeficiente de agrupamento medio do grafo;
+
+    while(vertice != nullptr) {
+        id = vertice->getId();
+        coeficiente += this->coeficienteLocal(id);
+        vertice = vertice->getProximoVertice();
+    }
+
+    resultado = coeficiente/this->getOrdem();
+
+    return resultado;
 }

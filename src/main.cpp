@@ -55,10 +55,15 @@ void selecionar(int selecao, Grafo *grafo) {
     cout << endl;
   }
   else if (selecao == 3){
-    //Coeficiente de agrupamento local do vértice"    
+    //Coeficiente de agrupamento local do vértice" 
+    int id;
+    cout << "Digite o id do vertice que deseja  agrupamento local: ";
+    cin >> id;
+    cout << "Agrupamento local do vertice " << id << ": " << grafo->coeficienteLocal(id);   
   }
   else if (selecao == 4){
-    //Coeficiente de agrupamento médio do grafo   
+    //Coeficiente de agrupamento médio do grafo 
+    cout << "Agrupamento de agrupamento medio do grafo : " << grafo->coeficienteMedio() << endl;  
   }
   else if (selecao == 5){ 
     //Caminho Mínimo entre dois vértices - Dijkstra

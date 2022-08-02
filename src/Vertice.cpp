@@ -15,6 +15,7 @@ Vertice::Vertice()
     this->ultima = nullptr;
     this->visitado = false;
     this->posicao = 0;
+    this->grauEntrada = 0;
 
 }
 Vertice::Vertice(int id)
@@ -162,4 +163,12 @@ Aresta* Vertice::getAresta(int idAdjacente)
             return aux;
     }
     return nullptr;
+}
+int Vertice::getGrauEntrada()
+{
+    return this->grauEntrada;
+}
+void Vertice::incrementaGrauEntrada()
+{
+    this->grauEntrada++;
 }

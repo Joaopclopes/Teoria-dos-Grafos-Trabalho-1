@@ -18,6 +18,7 @@ class Vertice {
     Aresta* ultima;
     bool visitado;
     int posicao;
+    int grauEntrada;
 
     public:
     Vertice();
@@ -45,6 +46,8 @@ class Vertice {
     Aresta* getAresta(int idAdjacente);
     void setPosicao(int posicao);
     int getPosicao();
+    int getGrauEntrada();
+    void incrementaGrauEntrada();
 
 
 };
